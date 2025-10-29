@@ -73,6 +73,38 @@
             border-color: #667eea;
         }
 
+        select {
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+            background: white;
+            cursor: pointer;
+            min-width: 250px;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        select:hover {
+            border-color: #667eea;
+        }
+
+        .respondent-dropdown-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .respondent-dropdown-label {
+            font-weight: 600;
+            color: #333;
+            white-space: nowrap;
+        }
+
         button {
             padding: 12px 24px;
             background: #667eea;
@@ -529,11 +561,11 @@
             <p class="subtitle">Select the priority level for each feature</p>
 
             <div class="respondent-section">
-                <div class="respondent-header">
-                    <span class="respondent-label">Select Respondent to View/Edit</span>
-                </div>
-                <div id="respondentListPage2" class="respondent-list">
-                    <!-- Respondent tabs will be generated here -->
+                <div class="respondent-dropdown-container">
+                    <label for="respondentDropdown" class="respondent-dropdown-label">Select Respondent:</label>
+                    <select id="respondentDropdown" onchange="handleRespondentDropdownChange()">
+                        <option value="">-- Select a respondent --</option>
+                    </select>
                 </div>
             </div>
 
@@ -679,7 +711,7 @@
 
         function renderRespondentList() {
             const listContainer = document.getElementById('respondentList');
-            const listContainerPage2 = document.getElementById('respondentListPage2');
+            const dropdown = document.getElementById('respondentDropdown');
 
             const emptyMessage = '<p style="color: #666; margin-top: 10px;">No respondents added yet.</p>';
             const respondentTabs = respondents.length === 0 ? emptyMessage : respondents.map(respondent => `
@@ -692,12 +724,33 @@
                 </div>
             `).join('');
 
-            // Update both page 1 and page 2 respondent lists
+            // Update page 1 respondent tabs
             if (listContainer) {
                 listContainer.innerHTML = respondentTabs;
             }
-            if (listContainerPage2) {
-                listContainerPage2.innerHTML = respondentTabs;
+
+            // Update page 2 dropdown
+            if (dropdown) {
+                dropdown.innerHTML = '<option value="">-- Select a respondent --</option>';
+                respondents.forEach(respondent => {
+                    const option = document.createElement('option');
+                    option.value = respondent.id;
+                    option.textContent = respondent.name;
+                    if (respondent.id === currentRespondentId) {
+                        option.selected = true;
+                    }
+                    dropdown.appendChild(option);
+                });
+            }
+        }
+
+        // Handle dropdown change on page 2
+        function handleRespondentDropdownChange() {
+            const dropdown = document.getElementById('respondentDropdown');
+            const selectedRespondentId = dropdown.value;
+
+            if (selectedRespondentId) {
+                switchRespondent(selectedRespondentId);
             }
         }
 
