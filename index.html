@@ -1011,7 +1011,7 @@
             summaryDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
 
-        // Export data to Excel with features as rows and respondents as columns
+        // Export data to Excel with respondents as rows and features as columns
         function exportToExcel() {
             if (features.length === 0) {
                 alert('No features to export');
@@ -1026,18 +1026,18 @@
             // Create workbook and worksheet
             const wb = XLSX.utils.book_new();
 
-            // Prepare data: Features as rows, Respondents as columns
+            // Prepare data: Respondents as rows, Features as columns
             const data = [];
 
-            // Header row: Feature | Respondent1 | Respondent2 | ...
-            const headerRow = ['Feature', ...respondents.map(r => r.name)];
+            // Header row: Respondent | Feature1 | Feature2 | Feature3 | ...
+            const headerRow = ['Respondent', ...features];
             data.push(headerRow);
 
-            // Data rows: Each feature with priorities from all respondents
-            features.forEach(feature => {
-                const row = [feature];
+            // Data rows: Each respondent with their priorities for all features
+            respondents.forEach(respondent => {
+                const row = [respondent.name];
 
-                respondents.forEach(respondent => {
+                features.forEach(feature => {
                     const priorityId = respondent.priorities[feature];
                     let priorityLabel = 'Not assigned';
 
@@ -1059,8 +1059,8 @@
 
             // Set column widths
             const colWidths = [
-                { wch: 30 }, // Feature column
-                ...respondents.map(() => ({ wch: 20 })) // Respondent columns
+                { wch: 25 }, // Respondent column
+                ...features.map(() => ({ wch: 25 })) // Feature columns
             ];
             ws['!cols'] = colWidths;
 
