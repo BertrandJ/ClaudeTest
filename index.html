@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Feature Prioritization Tool</title>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -125,6 +126,60 @@
 
         .button-info:hover {
             background: #138496;
+        }
+
+        .file-upload-section {
+            margin-bottom: 20px;
+            padding: 20px;
+            background: #f0f4ff;
+            border-radius: 8px;
+            border: 2px dashed #667eea;
+        }
+
+        .file-upload-label {
+            display: block;
+            margin-bottom: 10px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .file-upload-description {
+            display: block;
+            margin-bottom: 15px;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .file-upload-button {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s;
+            font-weight: 600;
+        }
+
+        .file-upload-button:hover {
+            background: #5568d3;
+        }
+
+        .file-name-display {
+            margin-left: 15px;
+            color: #666;
+            font-style: italic;
+        }
+
+        .divider {
+            text-align: center;
+            margin: 20px 0;
+            color: #999;
+            font-weight: 600;
         }
 
         .features-list {
@@ -303,6 +358,16 @@
             <h1>Feature Prioritization Tool</h1>
             <p class="subtitle">Enter the features you want to discuss during customer interviews</p>
 
+            <div class="file-upload-section">
+                <label class="file-upload-label">Upload Excel File</label>
+                <span class="file-upload-description">Upload an Excel file (.xlsx, .xls) with features listed in the first column</span>
+                <input type="file" id="excelFileInput" accept=".xlsx,.xls" onchange="handleFileUpload(event)">
+                <label for="excelFileInput" class="file-upload-button">Choose Excel File</label>
+                <span id="fileNameDisplay" class="file-name-display"></span>
+            </div>
+
+            <div class="divider">OR</div>
+
             <div class="feature-input-section">
                 <div class="input-group">
                     <input
@@ -431,6 +496,90 @@
             saveData();
             renderFeaturesList();
             updateNextButton();
+        }
+
+        // Handle Excel file upload
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) {
+                return;
+            }
+
+            // Display selected file name
+            const fileNameDisplay = document.getElementById('fileNameDisplay');
+            fileNameDisplay.textContent = file.name;
+
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+
+                    // Get the first sheet
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+
+                    // Convert to JSON
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+                    // Extract features from the first column
+                    let addedCount = 0;
+                    let duplicateCount = 0;
+                    let emptyCount = 0;
+
+                    jsonData.forEach((row, index) => {
+                        if (row && row.length > 0) {
+                            const featureName = String(row[0]).trim();
+
+                            // Skip empty rows
+                            if (featureName === '' || featureName === 'undefined') {
+                                emptyCount++;
+                                return;
+                            }
+
+                            // Check if feature already exists
+                            if (features.includes(featureName)) {
+                                duplicateCount++;
+                                return;
+                            }
+
+                            // Add the feature
+                            features.push(featureName);
+                            addedCount++;
+                        }
+                    });
+
+                    // Save and update UI
+                    saveData();
+                    renderFeaturesList();
+                    updateNextButton();
+
+                    // Show summary message
+                    let message = `Successfully imported ${addedCount} feature(s) from Excel file.`;
+                    if (duplicateCount > 0) {
+                        message += `\n${duplicateCount} duplicate(s) were skipped.`;
+                    }
+                    if (emptyCount > 0) {
+                        message += `\n${emptyCount} empty row(s) were skipped.`;
+                    }
+
+                    alert(message);
+
+                    // Clear the file input so the same file can be selected again if needed
+                    event.target.value = '';
+
+                } catch (error) {
+                    console.error('Error parsing Excel file:', error);
+                    alert('Error reading Excel file. Please make sure the file is a valid Excel format (.xlsx or .xls).');
+                }
+            };
+
+            reader.onerror = function() {
+                alert('Error reading file. Please try again.');
+            };
+
+            reader.readAsArrayBuffer(file);
         }
 
         // Remove a feature
