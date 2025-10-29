@@ -338,6 +338,15 @@
             margin-top: 20px;
         }
 
+        .features-list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
         .feature-item {
             display: flex;
             justify-content: space-between;
@@ -650,7 +659,17 @@
             </div>
 
             <div class="features-list">
-                <h2 style="margin-bottom: 15px; color: #333;">Features to Prioritize</h2>
+                <div class="features-list-header">
+                    <h2 style="color: #333;">Features to Prioritize</h2>
+                    <button
+                        id="removeAllFeaturesBtn"
+                        class="button-danger"
+                        onclick="removeAllFeatures()"
+                        style="display: none;"
+                    >
+                        Remove All Features
+                    </button>
+                </div>
                 <div id="featuresList">
                     <div class="empty-state">
                         <div class="empty-state-icon">📝</div>
@@ -1026,9 +1045,30 @@
             }
         }
 
+        // Remove all features at once
+        function removeAllFeatures() {
+            if (features.length === 0) {
+                return;
+            }
+
+            if (!confirm('Remove all features? This will clear priorities for every respondent.')) {
+                return;
+            }
+
+            features = [];
+            respondents.forEach(respondent => {
+                respondent.priorities = {};
+            });
+
+            saveData();
+            renderFeaturesList();
+            updateNextButton();
+        }
+
         // Render the features list on page 1
         function renderFeaturesList() {
             const listContainer = document.getElementById('featuresList');
+            const removeAllButton = document.getElementById('removeAllFeaturesBtn');
 
             if (features.length === 0) {
                 listContainer.innerHTML = `
@@ -1037,6 +1077,10 @@
                         <p>No features added yet. Start by adding your first feature above.</p>
                     </div>
                 `;
+
+                if (removeAllButton) {
+                    removeAllButton.style.display = 'none';
+                }
                 return;
             }
 
@@ -1046,6 +1090,10 @@
                     <button class="button-danger" onclick="removeFeature(${index})">Remove</button>
                 </div>
             `).join('');
+
+            if (removeAllButton) {
+                removeAllButton.style.display = 'inline-block';
+            }
         }
 
         // Update next button state
