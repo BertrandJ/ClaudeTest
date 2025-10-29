@@ -21,6 +21,7 @@
 
         .container {
             max-width: 1200px;
+            width: 100%;
             margin: 0 auto;
             background: white;
             border-radius: 12px;
@@ -57,6 +58,7 @@
             display: flex;
             gap: 10px;
             margin-bottom: 20px;
+            flex-wrap: wrap;
         }
 
         input[type="text"] {
@@ -97,6 +99,7 @@
             display: flex;
             align-items: center;
             gap: 10px;
+            flex-wrap: wrap;
         }
 
         .respondent-dropdown-label {
@@ -242,6 +245,7 @@
             display: flex;
             gap: 10px;
             align-items: center;
+            flex-wrap: wrap;
         }
 
         .respondent-input {
@@ -332,6 +336,8 @@
             border-radius: 6px;
             margin-bottom: 10px;
             border-left: 4px solid #CFFF00;
+            gap: 12px;
+            flex-wrap: wrap;
         }
 
         .feature-item span {
@@ -351,9 +357,15 @@
         }
 
         /* Page 2 - Prioritization */
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+
         .prioritization-table {
             width: 100%;
-            margin-top: 20px;
+            min-width: 520px;
             border-collapse: separate;
             border-spacing: 0;
             overflow: hidden;
@@ -423,6 +435,7 @@
             display: flex;
             gap: 10px;
             margin-top: 30px;
+            flex-wrap: wrap;
         }
 
         .summary {
@@ -464,12 +477,61 @@
         }
 
         @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+
             .container {
-                padding: 20px;
+                padding: 25px;
             }
 
             h1 {
-                font-size: 1.5em;
+                font-size: 1.6em;
+            }
+
+            .respondent-dropdown-container,
+            .respondent-input-group,
+            .input-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .respondent-dropdown-container label,
+            .respondent-dropdown-container select,
+            .respondent-dropdown-container button,
+            .respondent-input-group input,
+            .respondent-input-group button,
+            .input-group input,
+            .input-group button,
+            .file-upload-button,
+            .button-group button {
+                width: 100%;
+            }
+
+            select,
+            input[type="text"] {
+                min-width: 0;
+            }
+
+            .respondent-list {
+                flex-direction: column;
+            }
+
+            .feature-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .feature-item button {
+                width: 100%;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .summary-grid {
+                grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
             }
 
             .prioritization-table {
@@ -478,12 +540,36 @@
 
             .prioritization-table th,
             .prioritization-table td {
-                padding: 10px 5px;
+                padding: 10px 6px;
             }
 
             input[type="radio"] {
                 width: 16px;
                 height: 16px;
+            }
+
+            .file-name-display {
+                margin-left: 0;
+                display: block;
+                margin-top: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 1.4em;
+            }
+
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+
+            button {
+                font-size: 0.95em;
             }
         }
     </style>
@@ -976,14 +1062,15 @@
             const currentPriorities = getCurrentPriorities();
 
             let tableHTML = `
-                <table class="prioritization-table">
-                    <thead>
-                        <tr>
-                            <th>Feature</th>
-                            ${priorityOptions.map(p => `<th class="priority-cell">${p.label}</th>`).join('')}
-                        </tr>
-                    </thead>
-                    <tbody>
+                <div class="table-responsive">
+                    <table class="prioritization-table">
+                        <thead>
+                            <tr>
+                                <th>Feature</th>
+                                ${priorityOptions.map(p => `<th class="priority-cell">${p.label}</th>`).join('')}
+                            </tr>
+                        </thead>
+                        <tbody>
             `;
 
             features.forEach((feature, index) => {
@@ -1006,8 +1093,9 @@
             });
 
             tableHTML += `
-                    </tbody>
-                </table>
+                        </tbody>
+                    </table>
+                </div>
             `;
 
             content.innerHTML = tableHTML;
