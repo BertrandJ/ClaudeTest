@@ -96,12 +96,52 @@
         .app-header {
             display: flex;
             align-items: center;
+            justify-content: center;
             margin-bottom: 30px;
         }
 
         .app-logo {
             height: 48px;
             width: auto;
+        }
+
+        .app-navigation {
+            display: flex;
+            gap: 12px;
+            background: #ffffff;
+            padding: 12px 20px;
+            border-radius: 14px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+            margin-bottom: 30px;
+        }
+
+        .nav-button {
+            flex: 1;
+            background: rgba(18, 92, 255, 0.08);
+            color: #125cff;
+            border: none;
+            border-radius: 10px;
+            padding: 12px 16px;
+            font-size: 1em;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .nav-button:hover {
+            background: rgba(18, 92, 255, 0.15);
+            transform: translateY(-1px);
+        }
+
+        .nav-button.active {
+            background: #125cff;
+            color: #ffffff;
+            box-shadow: 0 12px 28px rgba(18, 92, 255, 0.28);
         }
 
         h1 {
@@ -602,6 +642,15 @@
                 padding: 25px;
             }
 
+            .app-navigation {
+                flex-direction: column;
+                padding: 10px 14px;
+            }
+
+            .nav-button {
+                width: 100%;
+            }
+
             h1 {
                 font-size: 1.6em;
             }
@@ -719,6 +768,20 @@
     <div id="app-content" class="container hidden">
         <div class="app-header">
             <img src="northlane-logo.svg" alt="Northlane logo" class="app-logo">
+        </div>
+        <div class="app-navigation">
+            <button type="button" class="nav-button active" data-target="page1" onclick="navigateToPage('page1')">
+                <span>1.</span>
+                <span>Feature Entry</span>
+            </button>
+            <button type="button" class="nav-button" data-target="page2" onclick="navigateToPage('page2')">
+                <span>2.</span>
+                <span>Prioritize Features</span>
+            </button>
+            <button type="button" class="nav-button" data-target="page3" onclick="navigateToPage('page3')">
+                <span>3.</span>
+                <span>Insights &amp; Chart</span>
+            </button>
         </div>
         <!-- Page 1: Feature Entry -->
         <div id="page1" class="page active">
@@ -916,6 +979,7 @@
             renderRespondentList();
             renderFeaturesList();
             updateNextButton();
+            setActivePage('page1');
         }
 
         window.addEventListener('DOMContentLoaded', () => {
@@ -940,6 +1004,7 @@
         let respondents = []; // Array of {id, name, priorities: {}}
         let currentRespondentId = null;
         let featureImportanceChart = null;
+        const pageIds = ['page1', 'page2', 'page3'];
 
         // Priority options (in order)
         const priorityOptions = [
@@ -1315,6 +1380,44 @@
             nextButton.disabled = features.length === 0;
         }
 
+        function setActivePage(pageId) {
+            pageIds.forEach(id => {
+                const pageElement = document.getElementById(id);
+                if (pageElement) {
+                    pageElement.classList.toggle('active', id === pageId);
+                }
+            });
+
+            document.querySelectorAll('.nav-button').forEach(button => {
+                const target = button.getAttribute('data-target');
+                button.classList.toggle('active', target === pageId);
+            });
+
+            if (pageId === 'page1') {
+                const summary = document.getElementById('summary');
+                if (summary) {
+                    summary.style.display = 'none';
+                }
+            }
+
+            if (pageId === 'page2') {
+                renderRespondentList();
+                renderPrioritizationTable();
+            }
+
+            if (pageId === 'page3') {
+                renderFeatureImportanceChart();
+            }
+        }
+
+        function navigateToPage(pageId) {
+            if (!pageIds.includes(pageId)) {
+                return;
+            }
+
+            setActivePage(pageId);
+        }
+
         // Navigate to prioritization page
         function goToPrioritization() {
             if (features.length === 0) {
@@ -1327,53 +1430,20 @@
                 return;
             }
 
-            document.getElementById('page1').classList.remove('active');
-            document.getElementById('page2').classList.add('active');
-            const chartPage = document.getElementById('page3');
-            if (chartPage) {
-                chartPage.classList.remove('active');
-            }
-            renderRespondentList(); // Update respondent name display
-            renderPrioritizationTable();
+            setActivePage('page2');
         }
 
         // Navigate back to entry page
         function goBackToEntry() {
-            document.getElementById('page2').classList.remove('active');
-            document.getElementById('page1').classList.add('active');
-            const chartPage = document.getElementById('page3');
-            if (chartPage) {
-                chartPage.classList.remove('active');
-            }
-            document.getElementById('summary').style.display = 'none';
+            setActivePage('page1');
         }
 
         function goToChartPage() {
-            const prioritizationPage = document.getElementById('page2');
-            const chartPage = document.getElementById('page3');
-
-            if (prioritizationPage) {
-                prioritizationPage.classList.remove('active');
-            }
-
-            if (chartPage) {
-                chartPage.classList.add('active');
-            }
-
-            renderFeatureImportanceChart();
+            setActivePage('page3');
         }
 
         function goBackToPrioritization() {
-            const prioritizationPage = document.getElementById('page2');
-            const chartPage = document.getElementById('page3');
-
-            if (chartPage) {
-                chartPage.classList.remove('active');
-            }
-
-            if (prioritizationPage) {
-                prioritizationPage.classList.add('active');
-            }
+            setActivePage('page2');
         }
 
         // Render the prioritization table
