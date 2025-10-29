@@ -19,6 +19,69 @@
             padding: 20px;
         }
 
+        body.locked {
+            overflow: hidden;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .login-screen {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 1000;
+        }
+
+        .login-card {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 40px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+            text-align: center;
+        }
+
+        .login-card img {
+            height: 48px;
+            width: auto;
+            margin-bottom: 20px;
+        }
+
+        .login-card h2 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.6em;
+        }
+
+        .login-card p {
+            color: #666;
+            margin-bottom: 25px;
+        }
+
+        .login-card .input-group {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .login-card input[type="text"],
+        .login-card input[type="password"] {
+            margin-bottom: 15px;
+        }
+
+        .login-error {
+            color: #dc3545;
+            margin-top: 10px;
+            min-height: 20px;
+            font-size: 0.95em;
+        }
+
         .container {
             max-width: 1200px;
             width: 100%;
@@ -603,8 +666,23 @@
         }
     </style>
 </head>
-<body>
-    <div class="container">
+<body class="locked">
+    <div id="login-screen" class="login-screen">
+        <div class="login-card">
+            <img src="northlane-logo.svg" alt="Northlane logo">
+            <h2>Secure Access</h2>
+            <p>Please enter your Northlane credentials to continue.</p>
+            <form id="login-form">
+                <div class="input-group">
+                    <input type="text" id="login-id" placeholder="Enter ID" autocomplete="off" required>
+                    <input type="text" id="login-password" placeholder="Enter password" autocomplete="off" required>
+                </div>
+                <button type="submit">Unlock Application</button>
+            </form>
+            <div id="login-error" class="login-error"></div>
+        </div>
+    </div>
+    <div id="app-content" class="container hidden">
         <div class="app-header">
             <img src="northlane-logo.svg" alt="Northlane logo" class="app-logo">
         </div>
@@ -721,6 +799,87 @@
     </div>
 
     <script>
+        const VALID_ID = 'NorthlaneApp';
+        const VALID_PASSWORD = 'TestNorthFeatures';
+
+        let appUnlocked = false;
+
+        function handleLogin(event) {
+            if (event) {
+                event.preventDefault();
+            }
+
+            const idInput = document.getElementById('login-id');
+            const passwordInput = document.getElementById('login-password');
+            const errorDiv = document.getElementById('login-error');
+
+            const enteredId = idInput ? idInput.value.trim() : '';
+            const enteredPassword = passwordInput ? passwordInput.value : '';
+
+            if (enteredId === VALID_ID && enteredPassword === VALID_PASSWORD) {
+                sessionStorage.setItem('northlaneAppUnlocked', 'true');
+                unlockApplication();
+                if (errorDiv) {
+                    errorDiv.textContent = '';
+                }
+            } else {
+                if (errorDiv) {
+                    errorDiv.textContent = 'Invalid ID or password. Please try again.';
+                }
+                if (passwordInput) {
+                    passwordInput.value = '';
+                    passwordInput.focus();
+                }
+            }
+        }
+
+        function unlockApplication() {
+            if (appUnlocked) {
+                return;
+            }
+
+            appUnlocked = true;
+
+            const loginScreen = document.getElementById('login-screen');
+            const appContent = document.getElementById('app-content');
+
+            if (loginScreen) {
+                loginScreen.classList.add('hidden');
+            }
+
+            if (appContent) {
+                appContent.classList.remove('hidden');
+            }
+
+            document.body.classList.remove('locked');
+
+            initializeAppData();
+        }
+
+        function initializeAppData() {
+            loadData();
+            renderRespondentList();
+            renderFeaturesList();
+            updateNextButton();
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const loginForm = document.getElementById('login-form');
+            if (loginForm) {
+                loginForm.addEventListener('submit', handleLogin);
+            }
+
+            const storedUnlock = sessionStorage.getItem('northlaneAppUnlocked');
+            if (storedUnlock === 'true') {
+                unlockApplication();
+            } else {
+                const idInput = document.getElementById('login-id');
+                if (idInput) {
+                    idInput.focus();
+                }
+            }
+        });
+
         // Data storage - Multi-respondent structure
         let features = [];
         let respondents = []; // Array of {id, name, priorities: {}}
@@ -733,14 +892,6 @@
             { id: 'nice', label: '3. Nice to have' },
             { id: 'not', label: '4. Not needed' }
         ];
-
-        // Load data from localStorage on page load
-        window.addEventListener('DOMContentLoaded', () => {
-            loadData();
-            renderRespondentList();
-            renderFeaturesList();
-            updateNextButton();
-        });
 
         // Save data to localStorage
         function saveData() {
