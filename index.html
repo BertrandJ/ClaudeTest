@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feature Prioritization Tool</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            padding: 40px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1em;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* Page 1 - Feature Entry */
+        .feature-input-section {
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            padding: 12px 24px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background 0.3s;
+            font-weight: 600;
+        }
+
+        button:hover {
+            background: #5568d3;
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .button-secondary {
+            background: #6c757d;
+        }
+
+        .button-secondary:hover {
+            background: #5a6268;
+        }
+
+        .button-success {
+            background: #28a745;
+        }
+
+        .button-success:hover {
+            background: #218838;
+        }
+
+        .button-danger {
+            background: #dc3545;
+            padding: 6px 12px;
+            font-size: 0.9em;
+        }
+
+        .button-danger:hover {
+            background: #c82333;
+        }
+
+        .features-list {
+            margin-top: 20px;
+        }
+
+        .feature-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .feature-item span {
+            color: #333;
+            font-size: 1em;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+
+        /* Page 2 - Prioritization */
+        .prioritization-table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: separate;
+            border-spacing: 0;
+            overflow: hidden;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .prioritization-table thead {
+            background: #667eea;
+            color: white;
+        }
+
+        .prioritization-table th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+
+        .prioritization-table th:first-child {
+            border-top-left-radius: 8px;
+        }
+
+        .prioritization-table th:last-child {
+            border-top-right-radius: 8px;
+        }
+
+        .prioritization-table td {
+            padding: 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .prioritization-table tbody tr {
+            background: white;
+            transition: background 0.2s;
+        }
+
+        .prioritization-table tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        .prioritization-table tbody tr:last-child td:first-child {
+            border-bottom-left-radius: 8px;
+        }
+
+        .prioritization-table tbody tr:last-child td:last-child {
+            border-bottom-right-radius: 8px;
+        }
+
+        .feature-name {
+            font-weight: 500;
+            color: #333;
+        }
+
+        input[type="radio"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: #667eea;
+        }
+
+        .priority-cell {
+            text-align: center;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        .summary {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #28a745;
+        }
+
+        .summary h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .summary-item {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .summary-label {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .summary-count {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 1.5em;
+            }
+
+            .prioritization-table {
+                font-size: 0.9em;
+            }
+
+            .prioritization-table th,
+            .prioritization-table td {
+                padding: 10px 5px;
+            }
+
+            input[type="radio"] {
+                width: 16px;
+                height: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Page 1: Feature Entry -->
+        <div id="page1" class="page active">
+            <h1>Feature Prioritization Tool</h1>
+            <p class="subtitle">Enter the features you want to discuss during customer interviews</p>
+
+            <div class="feature-input-section">
+                <div class="input-group">
+                    <input
+                        type="text"
+                        id="featureInput"
+                        placeholder="Enter a feature (e.g., 'User authentication', 'Export to PDF')..."
+                        autocomplete="off"
+                    >
+                    <button onclick="addFeature()">Add Feature</button>
+                </div>
+            </div>
+
+            <div class="features-list">
+                <h2 style="margin-bottom: 15px; color: #333;">Features to Prioritize</h2>
+                <div id="featuresList">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📝</div>
+                        <p>No features added yet. Start by adding your first feature above.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button
+                    onclick="goToPrioritization()"
+                    id="nextButton"
+                    class="button-success"
+                    disabled
+                >
+                    Next: Prioritize Features →
+                </button>
+            </div>
+        </div>
+
+        <!-- Page 2: Prioritization -->
+        <div id="page2" class="page">
+            <h1>Prioritize Features</h1>
+            <p class="subtitle">Select the priority level for each feature</p>
+
+            <div id="prioritizationContent">
+                <!-- Table will be generated by JavaScript -->
+            </div>
+
+            <div class="button-group">
+                <button onclick="goBackToEntry()" class="button-secondary">← Back to Features</button>
+                <button onclick="showSummary()" class="button-success">View Summary</button>
+            </div>
+
+            <div id="summary" class="summary" style="display: none;">
+                <!-- Summary will be generated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data storage
+        let features = [];
+        let priorities = {};
+
+        // Priority options (in order)
+        const priorityOptions = [
+            { id: 'must', label: '1. Must have' },
+            { id: 'should', label: '2. Should have' },
+            { id: 'nice', label: '3. Nice to have' },
+            { id: 'not', label: '4. Not needed' }
+        ];
+
+        // Load data from localStorage on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            loadData();
+            renderFeaturesList();
+            updateNextButton();
+        });
+
+        // Save data to localStorage
+        function saveData() {
+            localStorage.setItem('features', JSON.stringify(features));
+            localStorage.setItem('priorities', JSON.stringify(priorities));
+        }
+
+        // Load data from localStorage
+        function loadData() {
+            const savedFeatures = localStorage.getItem('features');
+            const savedPriorities = localStorage.getItem('priorities');
+
+            if (savedFeatures) {
+                features = JSON.parse(savedFeatures);
+            }
+            if (savedPriorities) {
+                priorities = JSON.parse(savedPriorities);
+            }
+        }
+
+        // Add feature (Enter key support)
+        document.addEventListener('DOMContentLoaded', () => {
+            const input = document.getElementById('featureInput');
+            if (input) {
+                input.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        addFeature();
+                    }
+                });
+            }
+        });
+
+        // Add a new feature
+        function addFeature() {
+            const input = document.getElementById('featureInput');
+            const featureName = input.value.trim();
+
+            if (featureName === '') {
+                alert('Please enter a feature name');
+                return;
+            }
+
+            if (features.includes(featureName)) {
+                alert('This feature has already been added');
+                return;
+            }
+
+            features.push(featureName);
+            input.value = '';
+            input.focus();
+
+            saveData();
+            renderFeaturesList();
+            updateNextButton();
+        }
+
+        // Remove a feature
+        function removeFeature(index) {
+            const feature = features[index];
+            if (confirm(`Remove "${feature}"?`)) {
+                features.splice(index, 1);
+                delete priorities[feature];
+
+                saveData();
+                renderFeaturesList();
+                updateNextButton();
+            }
+        }
+
+        // Render the features list on page 1
+        function renderFeaturesList() {
+            const listContainer = document.getElementById('featuresList');
+
+            if (features.length === 0) {
+                listContainer.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📝</div>
+                        <p>No features added yet. Start by adding your first feature above.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            listContainer.innerHTML = features.map((feature, index) => `
+                <div class="feature-item">
+                    <span>${feature}</span>
+                    <button class="button-danger" onclick="removeFeature(${index})">Remove</button>
+                </div>
+            `).join('');
+        }
+
+        // Update next button state
+        function updateNextButton() {
+            const nextButton = document.getElementById('nextButton');
+            nextButton.disabled = features.length === 0;
+        }
+
+        // Navigate to prioritization page
+        function goToPrioritization() {
+            if (features.length === 0) {
+                alert('Please add at least one feature first');
+                return;
+            }
+
+            document.getElementById('page1').classList.remove('active');
+            document.getElementById('page2').classList.add('active');
+            renderPrioritizationTable();
+        }
+
+        // Navigate back to entry page
+        function goBackToEntry() {
+            document.getElementById('page2').classList.remove('active');
+            document.getElementById('page1').classList.add('active');
+            document.getElementById('summary').style.display = 'none';
+        }
+
+        // Render the prioritization table
+        function renderPrioritizationTable() {
+            const content = document.getElementById('prioritizationContent');
+
+            let tableHTML = `
+                <table class="prioritization-table">
+                    <thead>
+                        <tr>
+                            <th>Feature</th>
+                            ${priorityOptions.map(p => `<th class="priority-cell">${p.label}</th>`).join('')}
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            features.forEach((feature, index) => {
+                tableHTML += `
+                    <tr>
+                        <td class="feature-name">${feature}</td>
+                        ${priorityOptions.map(p => `
+                            <td class="priority-cell">
+                                <input
+                                    type="radio"
+                                    name="priority-${index}"
+                                    value="${p.id}"
+                                    ${priorities[feature] === p.id ? 'checked' : ''}
+                                    onchange="updatePriority('${feature.replace(/'/g, "\\'")}', '${p.id}')"
+                                >
+                            </td>
+                        `).join('')}
+                    </tr>
+                `;
+            });
+
+            tableHTML += `
+                    </tbody>
+                </table>
+            `;
+
+            content.innerHTML = tableHTML;
+        }
+
+        // Update priority for a feature
+        function updatePriority(feature, priorityId) {
+            priorities[feature] = priorityId;
+            saveData();
+        }
+
+        // Show summary
+        function showSummary() {
+            const summaryDiv = document.getElementById('summary');
+
+            // Count features by priority
+            const counts = {
+                must: 0,
+                should: 0,
+                nice: 0,
+                not: 0,
+                unassigned: 0
+            };
+
+            features.forEach(feature => {
+                const priority = priorities[feature];
+                if (priority) {
+                    counts[priority]++;
+                } else {
+                    counts.unassigned++;
+                }
+            });
+
+            const summaryHTML = `
+                <h3>Prioritization Summary</h3>
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <div class="summary-label">1. Must have</div>
+                        <div class="summary-count">${counts.must}</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-label">2. Should have</div>
+                        <div class="summary-count">${counts.should}</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-label">3. Nice to have</div>
+                        <div class="summary-count">${counts.nice}</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-label">4. Not needed</div>
+                        <div class="summary-count">${counts.not}</div>
+                    </div>
+                    ${counts.unassigned > 0 ? `
+                    <div class="summary-item">
+                        <div class="summary-label">Unassigned</div>
+                        <div class="summary-count" style="color: #dc3545;">${counts.unassigned}</div>
+                    </div>
+                    ` : ''}
+                </div>
+            `;
+
+            summaryDiv.innerHTML = summaryHTML;
+            summaryDiv.style.display = 'block';
+            summaryDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    </script>
+</body>
+</html>
