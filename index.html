@@ -528,8 +528,13 @@
             <h1>Prioritize Features</h1>
             <p class="subtitle">Select the priority level for each feature</p>
 
-            <div id="currentRespondentInfo" class="respondent-info">
-                <span class="respondent-info-text">Current Respondent: <span id="currentRespondentName">None</span></span>
+            <div class="respondent-section">
+                <div class="respondent-header">
+                    <span class="respondent-label">Select Respondent to View/Edit</span>
+                </div>
+                <div id="respondentListPage2" class="respondent-list">
+                    <!-- Respondent tabs will be generated here -->
+                </div>
             </div>
 
             <div id="prioritizationContent">
@@ -640,7 +645,17 @@
             currentRespondentId = respondentId;
             saveData();
             renderRespondentList();
-            renderPrioritizationTable();
+
+            // Refresh the prioritization table if on page 2
+            const page2 = document.getElementById('page2');
+            if (page2 && page2.classList.contains('active')) {
+                renderPrioritizationTable();
+                // Hide summary when switching respondents
+                const summaryDiv = document.getElementById('summary');
+                if (summaryDiv) {
+                    summaryDiv.style.display = 'none';
+                }
+            }
         }
 
         function removeRespondent(respondentId) {
@@ -664,13 +679,10 @@
 
         function renderRespondentList() {
             const listContainer = document.getElementById('respondentList');
+            const listContainerPage2 = document.getElementById('respondentListPage2');
 
-            if (respondents.length === 0) {
-                listContainer.innerHTML = '<p style="color: #666; margin-top: 10px;">No respondents added yet.</p>';
-                return;
-            }
-
-            listContainer.innerHTML = respondents.map(respondent => `
+            const emptyMessage = '<p style="color: #666; margin-top: 10px;">No respondents added yet.</p>';
+            const respondentTabs = respondents.length === 0 ? emptyMessage : respondents.map(respondent => `
                 <div class="respondent-tab ${respondent.id === currentRespondentId ? 'active' : ''}"
                      onclick="switchRespondent('${respondent.id}')">
                     <span>${respondent.name}</span>
@@ -680,11 +692,12 @@
                 </div>
             `).join('');
 
-            // Update current respondent display on page 2
-            const currentRespondentNameSpan = document.getElementById('currentRespondentName');
-            if (currentRespondentNameSpan) {
-                const currentRespondent = getCurrentRespondent();
-                currentRespondentNameSpan.textContent = currentRespondent ? currentRespondent.name : 'None selected';
+            // Update both page 1 and page 2 respondent lists
+            if (listContainer) {
+                listContainer.innerHTML = respondentTabs;
+            }
+            if (listContainerPage2) {
+                listContainerPage2.innerHTML = respondentTabs;
             }
         }
 
