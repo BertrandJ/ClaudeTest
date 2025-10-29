@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Feature Prioritization Tool</title>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -13,7 +14,7 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #C8C4BF 0%, #a8a49f 100%);
             min-height: 100vh;
             padding: 20px;
         }
@@ -69,13 +70,45 @@
 
         input[type="text"]:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: #CFFF00;
+        }
+
+        select {
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+            background: white;
+            cursor: pointer;
+            min-width: 250px;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #CFFF00;
+        }
+
+        select:hover {
+            border-color: #CFFF00;
+        }
+
+        .respondent-dropdown-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .respondent-dropdown-label {
+            font-weight: 600;
+            color: #333;
+            white-space: nowrap;
         }
 
         button {
             padding: 12px 24px;
-            background: #667eea;
-            color: white;
+            background: #CFFF00;
+            color: #333;
             border: none;
             border-radius: 6px;
             font-size: 1em;
@@ -85,7 +118,7 @@
         }
 
         button:hover {
-            background: #5568d3;
+            background: #b8e600;
         }
 
         button:disabled {
@@ -94,19 +127,21 @@
         }
 
         .button-secondary {
-            background: #6c757d;
+            background: #C8C4BF;
+            color: #333;
         }
 
         .button-secondary:hover {
-            background: #5a6268;
+            background: #b0ada8;
         }
 
         .button-success {
-            background: #28a745;
+            background: #CFFF00;
+            color: #333;
         }
 
         .button-success:hover {
-            background: #218838;
+            background: #b8e600;
         }
 
         .button-danger {
@@ -120,11 +155,168 @@
         }
 
         .button-info {
-            background: #17a2b8;
+            background: #CFFF00;
+            color: #333;
         }
 
         .button-info:hover {
-            background: #138496;
+            background: #b8e600;
+        }
+
+        .file-upload-section {
+            margin-bottom: 20px;
+            padding: 20px;
+            background: #f5f4f3;
+            border-radius: 8px;
+            border: 2px dashed #CFFF00;
+        }
+
+        .file-upload-label {
+            display: block;
+            margin-bottom: 10px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .file-upload-description {
+            display: block;
+            margin-bottom: 15px;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .file-upload-button {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #CFFF00;
+            color: #333;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s;
+            font-weight: 600;
+        }
+
+        .file-upload-button:hover {
+            background: #b8e600;
+        }
+
+        .file-name-display {
+            margin-left: 15px;
+            color: #666;
+            font-style: italic;
+        }
+
+        .divider {
+            text-align: center;
+            margin: 20px 0;
+            color: #999;
+            font-weight: 600;
+        }
+
+        .respondent-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f5f4f3;
+            border-radius: 8px;
+            border: 2px solid #CFFF00;
+        }
+
+        .respondent-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .respondent-label {
+            font-weight: 600;
+            color: #333;
+            font-size: 1.1em;
+        }
+
+        .respondent-input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .respondent-input {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .respondent-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .respondent-tab {
+            padding: 10px 20px;
+            background: white;
+            border: 2px solid #CFFF00;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .respondent-tab:hover {
+            background: #ffffcc;
+        }
+
+        .respondent-tab.active {
+            background: #CFFF00;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .respondent-tab-remove {
+            background: none;
+            border: none;
+            color: #dc3545;
+            cursor: pointer;
+            font-size: 1.2em;
+            padding: 0;
+            margin-left: 5px;
+            line-height: 1;
+        }
+
+        .respondent-tab.active .respondent-tab-remove {
+            color: white;
+        }
+
+        .respondent-tab-remove:hover {
+            opacity: 0.7;
+        }
+
+        .respondent-info {
+            background: #f5f4f3;
+            padding: 12px 20px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border-left: 4px solid #CFFF00;
+        }
+
+        .respondent-info-text {
+            color: #333;
+            font-weight: 600;
+        }
+
+        .button-warning {
+            background: #CFFF00;
+            color: #333;
+        }
+
+        .button-warning:hover {
+            background: #b8e600;
         }
 
         .features-list {
@@ -136,10 +328,10 @@
             justify-content: space-between;
             align-items: center;
             padding: 12px 15px;
-            background: #f8f9fa;
+            background: #f5f4f3;
             border-radius: 6px;
             margin-bottom: 10px;
-            border-left: 4px solid #667eea;
+            border-left: 4px solid #CFFF00;
         }
 
         .feature-item span {
@@ -170,8 +362,8 @@
         }
 
         .prioritization-table thead {
-            background: #667eea;
-            color: white;
+            background: #CFFF00;
+            color: #333;
         }
 
         .prioritization-table th {
@@ -220,7 +412,7 @@
             width: 20px;
             height: 20px;
             cursor: pointer;
-            accent-color: #667eea;
+            accent-color: #CFFF00;
         }
 
         .priority-cell {
@@ -236,9 +428,9 @@
         .summary {
             margin-top: 30px;
             padding: 20px;
-            background: #f8f9fa;
+            background: #f5f4f3;
             border-radius: 8px;
-            border-left: 4px solid #28a745;
+            border-left: 4px solid #CFFF00;
         }
 
         .summary h3 {
@@ -268,7 +460,7 @@
         .summary-count {
             font-size: 2em;
             font-weight: bold;
-            color: #667eea;
+            color: #333;
         }
 
         @media (max-width: 768px) {
@@ -302,6 +494,39 @@
         <div id="page1" class="page active">
             <h1>Feature Prioritization Tool</h1>
             <p class="subtitle">Enter the features you want to discuss during customer interviews</p>
+
+            <div class="respondent-section">
+                <div class="respondent-header">
+                    <span class="respondent-label">Respondent Management</span>
+                </div>
+                <div class="respondent-input-group">
+                    <input
+                        type="text"
+                        id="respondentInput"
+                        class="respondent-input"
+                        placeholder="Enter respondent name..."
+                        autocomplete="off"
+                    >
+                    <button onclick="addRespondent()" class="button-warning">Add New Respondent</button>
+                </div>
+                <div class="respondent-dropdown-container" style="margin-top: 15px;">
+                    <label for="respondentDropdownPage1" class="respondent-dropdown-label">Current Respondent:</label>
+                    <select id="respondentDropdownPage1" onchange="handleRespondentDropdownChangePage1()">
+                        <option value="">-- Select a respondent --</option>
+                    </select>
+                    <button onclick="removeCurrentRespondent()" class="button-danger" id="removeRespondentBtn" style="display: none;">Remove</button>
+                </div>
+            </div>
+
+            <div class="file-upload-section">
+                <label class="file-upload-label">Upload Excel File</label>
+                <span class="file-upload-description">Upload an Excel file (.xlsx, .xls) with features listed in the first column</span>
+                <input type="file" id="excelFileInput" accept=".xlsx,.xls" onchange="handleFileUpload(event)">
+                <label for="excelFileInput" class="file-upload-button">Choose Excel File</label>
+                <span id="fileNameDisplay" class="file-name-display"></span>
+            </div>
+
+            <div class="divider">OR</div>
 
             <div class="feature-input-section">
                 <div class="input-group">
@@ -342,13 +567,22 @@
             <h1>Prioritize Features</h1>
             <p class="subtitle">Select the priority level for each feature</p>
 
+            <div class="respondent-section">
+                <div class="respondent-dropdown-container">
+                    <label for="respondentDropdown" class="respondent-dropdown-label">Select Respondent:</label>
+                    <select id="respondentDropdown" onchange="handleRespondentDropdownChange()">
+                        <option value="">-- Select a respondent --</option>
+                    </select>
+                </div>
+            </div>
+
             <div id="prioritizationContent">
                 <!-- Table will be generated by JavaScript -->
             </div>
 
             <div class="button-group">
                 <button onclick="goBackToEntry()" class="button-secondary">← Back to Features</button>
-                <button onclick="exportToCSV()" class="button-info">Export to CSV</button>
+                <button onclick="exportToExcel()" class="button-info">Export to Excel</button>
                 <button onclick="showSummary()" class="button-success">View Summary</button>
             </div>
 
@@ -359,9 +593,10 @@
     </div>
 
     <script>
-        // Data storage
+        // Data storage - Multi-respondent structure
         let features = [];
-        let priorities = {};
+        let respondents = []; // Array of {id, name, priorities: {}}
+        let currentRespondentId = null;
 
         // Priority options (in order)
         const priorityOptions = [
@@ -374,6 +609,7 @@
         // Load data from localStorage on page load
         window.addEventListener('DOMContentLoaded', () => {
             loadData();
+            renderRespondentList();
             renderFeaturesList();
             updateNextButton();
         });
@@ -381,29 +617,176 @@
         // Save data to localStorage
         function saveData() {
             localStorage.setItem('features', JSON.stringify(features));
-            localStorage.setItem('priorities', JSON.stringify(priorities));
+            localStorage.setItem('respondents', JSON.stringify(respondents));
+            localStorage.setItem('currentRespondentId', currentRespondentId);
         }
 
         // Load data from localStorage
         function loadData() {
             const savedFeatures = localStorage.getItem('features');
-            const savedPriorities = localStorage.getItem('priorities');
+            const savedRespondents = localStorage.getItem('respondents');
+            const savedCurrentRespondentId = localStorage.getItem('currentRespondentId');
 
             if (savedFeatures) {
                 features = JSON.parse(savedFeatures);
             }
-            if (savedPriorities) {
-                priorities = JSON.parse(savedPriorities);
+            if (savedRespondents) {
+                respondents = JSON.parse(savedRespondents);
+            }
+            if (savedCurrentRespondentId) {
+                currentRespondentId = savedCurrentRespondentId;
+            }
+        }
+
+        // Get current respondent object
+        function getCurrentRespondent() {
+            return respondents.find(r => r.id === currentRespondentId);
+        }
+
+        // Get current priorities for active respondent
+        function getCurrentPriorities() {
+            const respondent = getCurrentRespondent();
+            return respondent ? respondent.priorities : {};
+        }
+
+        // Respondent Management Functions
+        function addRespondent() {
+            const input = document.getElementById('respondentInput');
+            const respondentName = input.value.trim();
+
+            if (respondentName === '') {
+                alert('Please enter a respondent name');
+                return;
+            }
+
+            // Check if respondent name already exists
+            if (respondents.some(r => r.name === respondentName)) {
+                alert('A respondent with this name already exists');
+                return;
+            }
+
+            // Create new respondent
+            const newRespondent = {
+                id: 'resp_' + Date.now(),
+                name: respondentName,
+                priorities: {}
+            };
+
+            respondents.push(newRespondent);
+            currentRespondentId = newRespondent.id;
+
+            input.value = '';
+            saveData();
+            renderRespondentList();
+        }
+
+        function switchRespondent(respondentId) {
+            currentRespondentId = respondentId;
+            saveData();
+            renderRespondentList();
+
+            // Refresh the prioritization table if on page 2
+            const page2 = document.getElementById('page2');
+            if (page2 && page2.classList.contains('active')) {
+                renderPrioritizationTable();
+                // Hide summary when switching respondents
+                const summaryDiv = document.getElementById('summary');
+                if (summaryDiv) {
+                    summaryDiv.style.display = 'none';
+                }
+            }
+        }
+
+        function removeRespondent(respondentId) {
+            const respondent = respondents.find(r => r.id === respondentId);
+            if (!respondent) return;
+
+            if (!confirm(`Remove respondent "${respondent.name}" and all their responses?`)) {
+                return;
+            }
+
+            respondents = respondents.filter(r => r.id !== respondentId);
+
+            // If we removed the current respondent, switch to another or null
+            if (currentRespondentId === respondentId) {
+                currentRespondentId = respondents.length > 0 ? respondents[0].id : null;
+            }
+
+            saveData();
+            renderRespondentList();
+        }
+
+        function renderRespondentList() {
+            const dropdownPage1 = document.getElementById('respondentDropdownPage1');
+            const dropdownPage2 = document.getElementById('respondentDropdown');
+            const removeBtn = document.getElementById('removeRespondentBtn');
+
+            // Update both dropdowns
+            const dropdowns = [dropdownPage1, dropdownPage2];
+            dropdowns.forEach(dropdown => {
+                if (dropdown) {
+                    dropdown.innerHTML = '<option value="">-- Select a respondent --</option>';
+                    respondents.forEach(respondent => {
+                        const option = document.createElement('option');
+                        option.value = respondent.id;
+                        option.textContent = respondent.name;
+                        if (respondent.id === currentRespondentId) {
+                            option.selected = true;
+                        }
+                        dropdown.appendChild(option);
+                    });
+                }
+            });
+
+            // Show/hide remove button based on selection
+            if (removeBtn) {
+                removeBtn.style.display = currentRespondentId ? 'inline-block' : 'none';
+            }
+        }
+
+        // Handle dropdown change on page 1
+        function handleRespondentDropdownChangePage1() {
+            const dropdown = document.getElementById('respondentDropdownPage1');
+            const selectedRespondentId = dropdown.value;
+
+            if (selectedRespondentId) {
+                switchRespondent(selectedRespondentId);
+            }
+        }
+
+        // Handle dropdown change on page 2
+        function handleRespondentDropdownChange() {
+            const dropdown = document.getElementById('respondentDropdown');
+            const selectedRespondentId = dropdown.value;
+
+            if (selectedRespondentId) {
+                switchRespondent(selectedRespondentId);
+            }
+        }
+
+        // Remove current respondent
+        function removeCurrentRespondent() {
+            if (currentRespondentId) {
+                removeRespondent(currentRespondentId);
             }
         }
 
         // Add feature (Enter key support)
         document.addEventListener('DOMContentLoaded', () => {
-            const input = document.getElementById('featureInput');
-            if (input) {
-                input.addEventListener('keypress', (e) => {
+            const featureInput = document.getElementById('featureInput');
+            if (featureInput) {
+                featureInput.addEventListener('keypress', (e) => {
                     if (e.key === 'Enter') {
                         addFeature();
+                    }
+                });
+            }
+
+            const respondentInput = document.getElementById('respondentInput');
+            if (respondentInput) {
+                respondentInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        addRespondent();
                     }
                 });
             }
@@ -433,12 +816,100 @@
             updateNextButton();
         }
 
+        // Handle Excel file upload
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) {
+                return;
+            }
+
+            // Display selected file name
+            const fileNameDisplay = document.getElementById('fileNameDisplay');
+            fileNameDisplay.textContent = file.name;
+
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+
+                    // Get the first sheet
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+
+                    // Convert to JSON
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+                    // Extract features from the first column
+                    let addedCount = 0;
+                    let duplicateCount = 0;
+                    let emptyCount = 0;
+
+                    jsonData.forEach((row, index) => {
+                        if (row && row.length > 0) {
+                            const featureName = String(row[0]).trim();
+
+                            // Skip empty rows
+                            if (featureName === '' || featureName === 'undefined') {
+                                emptyCount++;
+                                return;
+                            }
+
+                            // Check if feature already exists
+                            if (features.includes(featureName)) {
+                                duplicateCount++;
+                                return;
+                            }
+
+                            // Add the feature
+                            features.push(featureName);
+                            addedCount++;
+                        }
+                    });
+
+                    // Save and update UI
+                    saveData();
+                    renderFeaturesList();
+                    updateNextButton();
+
+                    // Show summary message
+                    let message = `Successfully imported ${addedCount} feature(s) from Excel file.`;
+                    if (duplicateCount > 0) {
+                        message += `\n${duplicateCount} duplicate(s) were skipped.`;
+                    }
+                    if (emptyCount > 0) {
+                        message += `\n${emptyCount} empty row(s) were skipped.`;
+                    }
+
+                    alert(message);
+
+                    // Clear the file input so the same file can be selected again if needed
+                    event.target.value = '';
+
+                } catch (error) {
+                    console.error('Error parsing Excel file:', error);
+                    alert('Error reading Excel file. Please make sure the file is a valid Excel format (.xlsx or .xls).');
+                }
+            };
+
+            reader.onerror = function() {
+                alert('Error reading file. Please try again.');
+            };
+
+            reader.readAsArrayBuffer(file);
+        }
+
         // Remove a feature
         function removeFeature(index) {
             const feature = features[index];
             if (confirm(`Remove "${feature}"?`)) {
                 features.splice(index, 1);
-                delete priorities[feature];
+
+                // Remove feature from all respondents' priorities
+                respondents.forEach(respondent => {
+                    delete respondent.priorities[feature];
+                });
 
                 saveData();
                 renderFeaturesList();
@@ -481,8 +952,14 @@
                 return;
             }
 
+            if (!currentRespondentId) {
+                alert('Please add and select a respondent first');
+                return;
+            }
+
             document.getElementById('page1').classList.remove('active');
             document.getElementById('page2').classList.add('active');
+            renderRespondentList(); // Update respondent name display
             renderPrioritizationTable();
         }
 
@@ -496,6 +973,7 @@
         // Render the prioritization table
         function renderPrioritizationTable() {
             const content = document.getElementById('prioritizationContent');
+            const currentPriorities = getCurrentPriorities();
 
             let tableHTML = `
                 <table class="prioritization-table">
@@ -518,7 +996,7 @@
                                     type="radio"
                                     name="priority-${index}"
                                     value="${p.id}"
-                                    ${priorities[feature] === p.id ? 'checked' : ''}
+                                    ${currentPriorities[feature] === p.id ? 'checked' : ''}
                                     onchange="updatePriority('${feature.replace(/'/g, "\\'")}', '${p.id}')"
                                 >
                             </td>
@@ -537,15 +1015,19 @@
 
         // Update priority for a feature
         function updatePriority(feature, priorityId) {
-            priorities[feature] = priorityId;
-            saveData();
+            const respondent = getCurrentRespondent();
+            if (respondent) {
+                respondent.priorities[feature] = priorityId;
+                saveData();
+            }
         }
 
         // Show summary
         function showSummary() {
             const summaryDiv = document.getElementById('summary');
+            const currentPriorities = getCurrentPriorities();
 
-            // Count features by priority
+            // Count features by priority for current respondent
             const counts = {
                 must: 0,
                 should: 0,
@@ -555,7 +1037,7 @@
             };
 
             features.forEach(feature => {
-                const priority = priorities[feature];
+                const priority = currentPriorities[feature];
                 if (priority) {
                     counts[priority]++;
                 } else {
@@ -563,8 +1045,11 @@
                 }
             });
 
+            const currentRespondent = getCurrentRespondent();
+            const respondentName = currentRespondent ? currentRespondent.name : 'Unknown';
+
             const summaryHTML = `
-                <h3>Prioritization Summary</h3>
+                <h3>Prioritization Summary for ${respondentName}</h3>
                 <div class="summary-grid">
                     <div class="summary-item">
                         <div class="summary-label">1. Must have</div>
@@ -596,57 +1081,68 @@
             summaryDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
 
-        // Export data to CSV
-        function exportToCSV() {
+        // Export data to Excel with respondents as rows and features as columns
+        function exportToExcel() {
             if (features.length === 0) {
                 alert('No features to export');
                 return;
             }
 
-            // Create CSV content
-            let csvContent = 'Feature,Priority\n';
+            if (respondents.length === 0) {
+                alert('No respondents to export');
+                return;
+            }
 
-            // Add each feature with its priority
-            features.forEach(feature => {
-                const priorityId = priorities[feature];
-                let priorityLabel = 'Not assigned';
+            // Create workbook and worksheet
+            const wb = XLSX.utils.book_new();
 
-                if (priorityId) {
-                    const priorityOption = priorityOptions.find(p => p.id === priorityId);
-                    if (priorityOption) {
-                        priorityLabel = priorityOption.label;
+            // Prepare data: Respondents as rows, Features as columns
+            const data = [];
+
+            // Header row: Respondent | Feature1 | Feature2 | Feature3 | ...
+            const headerRow = ['Respondent', ...features];
+            data.push(headerRow);
+
+            // Data rows: Each respondent with their priorities for all features
+            respondents.forEach(respondent => {
+                const row = [respondent.name];
+
+                features.forEach(feature => {
+                    const priorityId = respondent.priorities[feature];
+                    let priorityLabel = 'Not assigned';
+
+                    if (priorityId) {
+                        const priorityOption = priorityOptions.find(p => p.id === priorityId);
+                        if (priorityOption) {
+                            priorityLabel = priorityOption.label;
+                        }
                     }
-                }
 
-                // Escape feature name for CSV (handle commas and quotes)
-                const escapedFeature = feature.includes(',') || feature.includes('"')
-                    ? `"${feature.replace(/"/g, '""')}"`
-                    : feature;
+                    row.push(priorityLabel);
+                });
 
-                // Escape priority label for CSV
-                const escapedPriority = priorityLabel.includes(',') || priorityLabel.includes('"')
-                    ? `"${priorityLabel.replace(/"/g, '""')}"`
-                    : priorityLabel;
-
-                csvContent += `${escapedFeature},${escapedPriority}\n`;
+                data.push(row);
             });
 
-            // Create a blob and download link
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            const url = URL.createObjectURL(blob);
+            // Create worksheet from data
+            const ws = XLSX.utils.aoa_to_sheet(data);
+
+            // Set column widths
+            const colWidths = [
+                { wch: 25 }, // Respondent column
+                ...features.map(() => ({ wch: 25 })) // Feature columns
+            ];
+            ws['!cols'] = colWidths;
+
+            // Add worksheet to workbook
+            XLSX.utils.book_append_sheet(wb, ws, 'Prioritization Results');
 
             // Generate filename with current date
             const date = new Date();
-            const filename = `feature-prioritization-${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}.csv`;
+            const filename = `feature-prioritization-${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}.xlsx`;
 
-            link.setAttribute('href', url);
-            link.setAttribute('download', filename);
-            link.style.visibility = 'hidden';
-
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            // Write and download file
+            XLSX.writeFile(wb, filename);
         }
     </script>
 </body>
