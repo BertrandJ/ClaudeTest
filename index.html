@@ -506,8 +506,12 @@
                     >
                     <button onclick="addRespondent()" class="button-warning">Add New Respondent</button>
                 </div>
-                <div id="respondentList" class="respondent-list">
-                    <!-- Respondent tabs will be generated here -->
+                <div class="respondent-dropdown-container" style="margin-top: 15px;">
+                    <label for="respondentDropdownPage1" class="respondent-dropdown-label">Current Respondent:</label>
+                    <select id="respondentDropdownPage1" onchange="handleRespondentDropdownChangePage1()">
+                        <option value="">-- Select a respondent --</option>
+                    </select>
+                    <button onclick="removeCurrentRespondent()" class="button-danger" id="removeRespondentBtn" style="display: none;">Remove</button>
                 </div>
             </div>
 
@@ -710,37 +714,40 @@
         }
 
         function renderRespondentList() {
-            const listContainer = document.getElementById('respondentList');
-            const dropdown = document.getElementById('respondentDropdown');
+            const dropdownPage1 = document.getElementById('respondentDropdownPage1');
+            const dropdownPage2 = document.getElementById('respondentDropdown');
+            const removeBtn = document.getElementById('removeRespondentBtn');
 
-            const emptyMessage = '<p style="color: #666; margin-top: 10px;">No respondents added yet.</p>';
-            const respondentTabs = respondents.length === 0 ? emptyMessage : respondents.map(respondent => `
-                <div class="respondent-tab ${respondent.id === currentRespondentId ? 'active' : ''}"
-                     onclick="switchRespondent('${respondent.id}')">
-                    <span>${respondent.name}</span>
-                    <button class="respondent-tab-remove"
-                            onclick="event.stopPropagation(); removeRespondent('${respondent.id}')"
-                            title="Remove respondent">×</button>
-                </div>
-            `).join('');
+            // Update both dropdowns
+            const dropdowns = [dropdownPage1, dropdownPage2];
+            dropdowns.forEach(dropdown => {
+                if (dropdown) {
+                    dropdown.innerHTML = '<option value="">-- Select a respondent --</option>';
+                    respondents.forEach(respondent => {
+                        const option = document.createElement('option');
+                        option.value = respondent.id;
+                        option.textContent = respondent.name;
+                        if (respondent.id === currentRespondentId) {
+                            option.selected = true;
+                        }
+                        dropdown.appendChild(option);
+                    });
+                }
+            });
 
-            // Update page 1 respondent tabs
-            if (listContainer) {
-                listContainer.innerHTML = respondentTabs;
+            // Show/hide remove button based on selection
+            if (removeBtn) {
+                removeBtn.style.display = currentRespondentId ? 'inline-block' : 'none';
             }
+        }
 
-            // Update page 2 dropdown
-            if (dropdown) {
-                dropdown.innerHTML = '<option value="">-- Select a respondent --</option>';
-                respondents.forEach(respondent => {
-                    const option = document.createElement('option');
-                    option.value = respondent.id;
-                    option.textContent = respondent.name;
-                    if (respondent.id === currentRespondentId) {
-                        option.selected = true;
-                    }
-                    dropdown.appendChild(option);
-                });
+        // Handle dropdown change on page 1
+        function handleRespondentDropdownChangePage1() {
+            const dropdown = document.getElementById('respondentDropdownPage1');
+            const selectedRespondentId = dropdown.value;
+
+            if (selectedRespondentId) {
+                switchRespondent(selectedRespondentId);
             }
         }
 
@@ -751,6 +758,13 @@
 
             if (selectedRespondentId) {
                 switchRespondent(selectedRespondentId);
+            }
+        }
+
+        // Remove current respondent
+        function removeCurrentRespondent() {
+            if (currentRespondentId) {
+                removeRespondent(currentRespondentId);
             }
         }
 
