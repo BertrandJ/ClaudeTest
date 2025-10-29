@@ -119,6 +119,14 @@
             background: #c82333;
         }
 
+        .button-info {
+            background: #17a2b8;
+        }
+
+        .button-info:hover {
+            background: #138496;
+        }
+
         .features-list {
             margin-top: 20px;
         }
@@ -340,6 +348,7 @@
 
             <div class="button-group">
                 <button onclick="goBackToEntry()" class="button-secondary">← Back to Features</button>
+                <button onclick="exportToCSV()" class="button-info">Export to CSV</button>
                 <button onclick="showSummary()" class="button-success">View Summary</button>
             </div>
 
@@ -585,6 +594,59 @@
             summaryDiv.innerHTML = summaryHTML;
             summaryDiv.style.display = 'block';
             summaryDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        // Export data to CSV
+        function exportToCSV() {
+            if (features.length === 0) {
+                alert('No features to export');
+                return;
+            }
+
+            // Create CSV content
+            let csvContent = 'Feature,Priority\n';
+
+            // Add each feature with its priority
+            features.forEach(feature => {
+                const priorityId = priorities[feature];
+                let priorityLabel = 'Not assigned';
+
+                if (priorityId) {
+                    const priorityOption = priorityOptions.find(p => p.id === priorityId);
+                    if (priorityOption) {
+                        priorityLabel = priorityOption.label;
+                    }
+                }
+
+                // Escape feature name for CSV (handle commas and quotes)
+                const escapedFeature = feature.includes(',') || feature.includes('"')
+                    ? `"${feature.replace(/"/g, '""')}"`
+                    : feature;
+
+                // Escape priority label for CSV
+                const escapedPriority = priorityLabel.includes(',') || priorityLabel.includes('"')
+                    ? `"${priorityLabel.replace(/"/g, '""')}"`
+                    : priorityLabel;
+
+                csvContent += `${escapedFeature},${escapedPriority}\n`;
+            });
+
+            // Create a blob and download link
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+
+            // Generate filename with current date
+            const date = new Date();
+            const filename = `feature-prioritization-${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}.csv`;
+
+            link.setAttribute('href', url);
+            link.setAttribute('download', filename);
+            link.style.visibility = 'hidden';
+
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
     </script>
 </body>
