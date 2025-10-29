@@ -29,6 +29,17 @@
             padding: 40px;
         }
 
+        .app-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .app-logo {
+            height: 48px;
+            width: auto;
+        }
+
         h1 {
             color: #333;
             margin-bottom: 10px;
@@ -560,6 +571,15 @@
                 padding: 20px;
             }
 
+            .app-header {
+                justify-content: center;
+                margin-bottom: 25px;
+            }
+
+            .app-logo {
+                height: 40px;
+            }
+
             h1 {
                 font-size: 1.4em;
             }
@@ -576,6 +596,9 @@
 </head>
 <body>
     <div class="container">
+        <div class="app-header">
+            <img src="northlane-logo.svg" alt="Northlane logo" class="app-logo">
+        </div>
         <!-- Page 1: Feature Entry -->
         <div id="page1" class="page active">
             <h1>Feature Prioritization Tool</h1>
