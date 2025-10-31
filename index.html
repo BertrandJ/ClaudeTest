@@ -3,10 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Feature Prioritization Tool for customer interviews and product development">
     <title>Feature Prioritization Tool</title>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
+        :root {
+            /* Color Palette */
+            --color-primary: #125cff;
+            --color-primary-hover: rgba(18, 92, 255, 0.15);
+            --color-primary-active: rgba(18, 92, 255, 0.28);
+            --color-accent: #CFFF00;
+            --color-accent-hover: #b8e600;
+            --color-accent-light: rgba(207, 255, 0, 0.12);
+            --color-accent-light-hover: rgba(207, 255, 0, 0.25);
+            --color-danger: #E799A3;
+            --color-danger-hover: #d6828d;
+            --color-danger-text: #dc3545;
+            --color-success: #4CAF50;
+            --color-warning: #FFC107;
+            --color-info: #7c4dff;
+            --color-info-hover: #6535ff;
+            
+            /* Neutral Colors */
+            --color-bg-primary: #ffffff;
+            --color-bg-secondary: #f5f4f3;
+            --color-bg-tertiary: #f8f9fa;
+            --color-text-primary: #333;
+            --color-text-secondary: #666;
+            --color-text-tertiary: #999;
+            --color-border: #e0e0e0;
+            --color-border-light: #e5e7eb;
+            
+            /* Background */
+            --color-bg-gradient-start: #C8C4BF;
+            --color-bg-gradient-end: #a8a49f;
+            
+            /* Chart Colors */
+            --chart-color-must: #6C63FF;
+            --chart-color-should: #4CAF50;
+            --chart-color-nice: #FFC107;
+            --chart-color-not: #FF7043;
+            
+            /* Spacing */
+            --spacing-xs: 4px;
+            --spacing-sm: 8px;
+            --spacing-md: 12px;
+            --spacing-lg: 20px;
+            --spacing-xl: 30px;
+            --spacing-xxl: 40px;
+            
+            /* Border Radius */
+            --radius-sm: 6px;
+            --radius-md: 8px;
+            --radius-lg: 10px;
+            --radius-xl: 12px;
+            
+            /* Shadows */
+            --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.2);
+            --shadow-xl: 0 20px 50px rgba(0, 0, 0, 0.25);
+            
+            /* Transitions */
+            --transition-fast: 0.2s ease-in-out;
+            --transition-normal: 0.3s ease;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -15,9 +78,10 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #C8C4BF 0%, #a8a49f 100%);
+            background: linear-gradient(135deg, var(--color-bg-gradient-start) 0%, var(--color-bg-gradient-end) 100%);
             min-height: 100vh;
-            padding: 20px;
+            padding: var(--spacing-lg);
+            color: var(--color-text-primary);
         }
 
         body.locked {
@@ -40,29 +104,29 @@
         }
 
         .login-card {
-            background: #ffffff;
-            border-radius: 12px;
-            padding: 40px;
+            background: var(--color-bg-primary);
+            border-radius: var(--radius-xl);
+            padding: var(--spacing-xxl);
             width: 100%;
             max-width: 420px;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+            box-shadow: var(--shadow-xl);
             text-align: center;
         }
 
         .login-card img {
             height: 48px;
             width: auto;
-            margin-bottom: 20px;
+            margin-bottom: var(--spacing-lg);
         }
 
         .login-card h2 {
-            color: #333;
+            color: var(--color-text-primary);
             margin-bottom: 10px;
             font-size: 1.6em;
         }
 
         .login-card p {
-            color: #666;
+            color: var(--color-text-secondary);
             margin-bottom: 25px;
         }
 
@@ -77,20 +141,101 @@
         }
 
         .login-error {
-            color: #dc3545;
+            color: var(--color-danger-text);
             margin-top: 10px;
             min-height: 20px;
             font-size: 0.95em;
+            font-weight: 500;
+        }
+        
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+        
+        label:not(.sr-only) {
+            display: block;
+            margin-bottom: var(--spacing-sm);
+            color: var(--color-text-primary);
+            font-weight: 500;
         }
 
         .container {
             max-width: 1200px;
             width: 100%;
             margin: 0 auto;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-            padding: 40px;
+            background: var(--color-bg-primary);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+            padding: var(--spacing-xxl);
+        }
+        
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+            position: relative;
+        }
+        
+        .loading::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            margin: -10px 0 0 -10px;
+            border: 3px solid var(--color-primary);
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: var(--spacing-md) var(--spacing-lg);
+            border-radius: var(--radius-md);
+            color: var(--color-bg-primary);
+            font-weight: 500;
+            box-shadow: var(--shadow-lg);
+            z-index: 2000;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all var(--transition-normal);
+            max-width: 300px;
+        }
+        
+        .notification.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        .notification-success {
+            background: var(--color-success);
+        }
+        
+        .notification-warning {
+            background: var(--color-warning);
+        }
+        
+        .notification-error {
+            background: var(--color-danger-text);
+        }
+        
+        .notification-info {
+            background: var(--color-primary);
         }
 
         .app-header {
@@ -129,31 +274,36 @@
 
         .nav-button {
             background: rgba(18, 92, 255, 0.08);
-            color: #125cff;
+            color: var(--color-primary);
             border: none;
-            border-radius: 10px;
-            padding: 12px 16px;
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-md) var(--spacing-md);
             font-size: 1em;
             font-weight: 600;
             letter-spacing: 0.01em;
             cursor: pointer;
-            transition: all 0.2s ease-in-out;
+            transition: all var(--transition-fast);
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: var(--spacing-sm);
             width: 100%;
         }
 
-        .nav-button:hover {
-            background: rgba(18, 92, 255, 0.15);
+        .nav-button:hover:not(:disabled) {
+            background: var(--color-primary-hover);
             transform: translateY(-1px);
+        }
+        
+        .nav-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
 
         .nav-button.active {
-            background: #125cff;
+            background: var(--color-primary);
             color: #ffffff;
-            box-shadow: 0 12px 28px rgba(18, 92, 255, 0.28);
+            box-shadow: 0 12px 28px var(--color-primary-active);
         }
 
         .nav-section {
@@ -178,29 +328,34 @@
         }
 
         .nav-action-button {
-            background: rgba(207, 255, 0, 0.12);
+            background: var(--color-accent-light);
             color: #5a6600;
             border: none;
-            border-radius: 10px;
-            padding: 12px 16px;
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-md) var(--spacing-md);
             font-size: 0.95em;
             font-weight: 600;
             letter-spacing: 0.01em;
             cursor: pointer;
-            transition: all 0.2s ease-in-out;
+            transition: all var(--transition-fast);
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: var(--spacing-sm);
             width: 100%;
         }
 
-        .nav-action-button:hover {
-            background: rgba(207, 255, 0, 0.25);
+        .nav-action-button:hover:not(:disabled) {
+            background: var(--color-accent-light-hover);
             transform: translateY(-1px);
         }
+        
+        .nav-action-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
 
-        .nav-action-button:active {
+        .nav-action-button:active:not(:disabled) {
             transform: translateY(0);
         }
 
@@ -239,37 +394,50 @@
         input[type="text"],
         input[type="password"] {
             flex: 1;
-            padding: 12px 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 6px;
+            padding: var(--spacing-md) 15px;
+            border: 2px solid var(--color-border);
+            border-radius: var(--radius-sm);
             font-size: 1em;
-            transition: border-color 0.3s;
+            transition: border-color var(--transition-normal);
+            background: var(--color-bg-primary);
         }
 
         input[type="text"]:focus,
         input[type="password"]:focus {
             outline: none;
-            border-color: #CFFF00;
+            border-color: var(--color-accent);
+            box-shadow: 0 0 0 3px rgba(207, 255, 0, 0.1);
+        }
+        
+        input[type="text"]:invalid:not(:focus):not(:placeholder-shown),
+        input[type="password"]:invalid:not(:focus):not(:placeholder-shown) {
+            border-color: var(--color-danger-text);
         }
 
         select {
-            padding: 12px 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 6px;
+            padding: var(--spacing-md) 15px;
+            border: 2px solid var(--color-border);
+            border-radius: var(--radius-sm);
             font-size: 1em;
-            transition: border-color 0.3s;
-            background: white;
+            transition: border-color var(--transition-normal);
+            background: var(--color-bg-primary);
             cursor: pointer;
             min-width: 250px;
         }
 
         select:focus {
             outline: none;
-            border-color: #CFFF00;
+            border-color: var(--color-accent);
+            box-shadow: 0 0 0 3px rgba(207, 255, 0, 0.1);
         }
 
-        select:hover {
-            border-color: #CFFF00;
+        select:hover:not(:disabled) {
+            border-color: var(--color-accent);
+        }
+        
+        select:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
         }
 
         .respondent-dropdown-container {
@@ -286,78 +454,103 @@
         }
 
         button {
-            padding: 12px 24px;
-            background: #CFFF00;
-            color: #333;
+            padding: var(--spacing-md) 24px;
+            background: var(--color-accent);
+            color: var(--color-text-primary);
             border: none;
-            border-radius: 6px;
+            border-radius: var(--radius-sm);
             font-size: 1em;
             cursor: pointer;
-            transition: background 0.3s;
+            transition: all var(--transition-normal);
             font-weight: 600;
+            position: relative;
         }
 
-        button:hover {
-            background: #b8e600;
+        button:hover:not(:disabled) {
+            background: var(--color-accent-hover);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        button:active:not(:disabled) {
+            transform: translateY(0);
         }
 
         button:disabled {
-            background: #ccc;
+            background: var(--color-border);
             cursor: not-allowed;
+            opacity: 0.6;
+        }
+        
+        button:focus-visible {
+            outline: 2px solid var(--color-primary);
+            outline-offset: 2px;
         }
 
         .button-secondary {
-            background: #C8C4BF;
-            color: #333;
+            background: var(--color-bg-gradient-start);
+            color: var(--color-text-primary);
         }
 
-        .button-secondary:hover {
+        .button-secondary:hover:not(:disabled) {
             background: #b0ada8;
         }
 
         .button-success {
-            background: #CFFF00;
-            color: #333;
+            background: var(--color-accent);
+            color: var(--color-text-primary);
         }
 
-        .button-success:hover {
-            background: #b8e600;
+        .button-success:hover:not(:disabled) {
+            background: var(--color-accent-hover);
         }
 
         .button-danger {
-            background: #E799A3;
+            background: var(--color-danger);
             padding: 6px 12px;
             font-size: 0.9em;
+            color: var(--color-text-primary);
         }
 
-        .button-danger:hover {
-            background: #d6828d;
+        .button-danger:hover:not(:disabled) {
+            background: var(--color-danger-hover);
         }
 
         .button-info {
-            background: #CFFF00;
-            color: #333;
+            background: var(--color-accent);
+            color: var(--color-text-primary);
         }
 
-        .button-info:hover {
-            background: #b8e600;
+        .button-info:hover:not(:disabled) {
+            background: var(--color-accent-hover);
         }
 
         .button-chart {
-            background: #7c4dff;
+            background: var(--color-info);
             color: #fff;
         }
 
-        .button-chart:hover {
-            background: #6535ff;
+        .button-chart:hover:not(:disabled) {
+            background: var(--color-info-hover);
         }
 
         .file-upload-section {
-            margin-bottom: 20px;
-            padding: 20px;
-            background: #f5f4f3;
-            border-radius: 8px;
-            border: 2px dashed #CFFF00;
+            margin-bottom: var(--spacing-lg);
+            padding: var(--spacing-lg);
+            background: var(--color-bg-secondary);
+            border-radius: var(--radius-md);
+            border: 2px dashed var(--color-accent);
+            transition: all var(--transition-normal);
+        }
+        
+        .file-upload-section:hover {
+            border-color: var(--color-accent-hover);
+            background: rgba(207, 255, 0, 0.05);
+        }
+        
+        .file-upload-section.dragover {
+            border-color: var(--color-primary);
+            background: rgba(18, 92, 255, 0.05);
         }
 
         .file-upload-label {
@@ -407,11 +600,11 @@
         }
 
         .respondent-section {
-            margin-bottom: 30px;
-            padding: 20px;
-            background: #f5f4f3;
-            border-radius: 8px;
-            border: 2px solid #CFFF00;
+            margin-bottom: var(--spacing-xl);
+            padding: var(--spacing-lg);
+            background: var(--color-bg-secondary);
+            border-radius: var(--radius-md);
+            border: 2px solid var(--color-accent);
         }
 
         .respondent-header {
@@ -526,13 +719,19 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 12px 15px;
-            background: #f5f4f3;
-            border-radius: 6px;
+            padding: var(--spacing-md) 15px;
+            background: var(--color-bg-secondary);
+            border-radius: var(--radius-sm);
             margin-bottom: 10px;
-            border-left: 4px solid #CFFF00;
-            gap: 12px;
+            border-left: 4px solid var(--color-accent);
+            gap: var(--spacing-md);
             flex-wrap: wrap;
+            transition: all var(--transition-fast);
+        }
+        
+        .feature-item:hover {
+            background: rgba(207, 255, 0, 0.1);
+            transform: translateX(4px);
         }
 
         .feature-item span {
@@ -564,13 +763,13 @@
             border-collapse: separate;
             border-spacing: 0;
             overflow: hidden;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-md);
         }
 
         .prioritization-table thead {
-            background: #CFFF00;
-            color: #333;
+            background: var(--color-accent);
+            color: var(--color-text-primary);
         }
 
         .prioritization-table th {
@@ -590,16 +789,20 @@
 
         .prioritization-table td {
             padding: 15px;
-            border-bottom: 1px solid #e0e0e0;
+            border-bottom: 1px solid var(--color-border);
         }
 
         .prioritization-table tbody tr {
-            background: white;
-            transition: background 0.2s;
+            background: var(--color-bg-primary);
+            transition: background var(--transition-fast);
         }
 
         .prioritization-table tbody tr:hover {
-            background: #f8f9fa;
+            background: var(--color-bg-tertiary);
+        }
+        
+        .prioritization-table tbody tr:focus-within {
+            background: rgba(207, 255, 0, 0.1);
         }
 
         .prioritization-table tbody tr:last-child td:first-child {
@@ -619,7 +822,25 @@
             width: 20px;
             height: 20px;
             cursor: pointer;
-            accent-color: #CFFF00;
+            accent-color: var(--color-accent);
+            transition: transform var(--transition-fast);
+        }
+        
+        input[type="radio"]:hover {
+            transform: scale(1.1);
+        }
+        
+        input[type="radio"]:focus-visible {
+            outline: 2px solid var(--color-primary);
+            outline-offset: 2px;
+            border-radius: 50%;
+        }
+        
+        .radio-label {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
         }
 
         .priority-cell {
@@ -634,11 +855,23 @@
         }
 
         .summary {
-            margin-top: 30px;
-            padding: 20px;
-            background: #f5f4f3;
-            border-radius: 8px;
-            border-left: 4px solid #CFFF00;
+            margin-top: var(--spacing-xl);
+            padding: var(--spacing-lg);
+            background: var(--color-bg-secondary);
+            border-radius: var(--radius-md);
+            border-left: 4px solid var(--color-accent);
+            animation: fadeIn 0.3s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .chart-page-intro {
@@ -651,9 +884,9 @@
             position: relative;
             width: 100%;
             min-height: 320px;
-            background: #f8f9fa;
-            border-radius: 12px;
-            padding: 20px;
+            background: var(--color-bg-tertiary);
+            border-radius: var(--radius-xl);
+            padding: var(--spacing-lg);
             box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.05);
         }
 
@@ -839,19 +1072,39 @@
     </style>
 </head>
 <body class="locked">
-    <div id="login-screen" class="login-screen">
+    <div id="login-screen" class="login-screen" role="dialog" aria-labelledby="login-title" aria-modal="true">
         <div class="login-card">
-            <img src="northlane-logo.svg" alt="Northlane logo">
-            <h2>Secure Access</h2>
+            <img src="northlane-logo.svg" alt="Northlane logo" width="auto" height="48">
+            <h2 id="login-title">Secure Access</h2>
             <p>Please enter your Northlane credentials to continue.</p>
-            <form id="login-form">
+            <form id="login-form" aria-label="Login form">
                 <div class="input-group">
-                    <input type="text" id="login-id" placeholder="Enter ID" autocomplete="off" required>
-                    <input type="password" id="login-password" placeholder="Enter password" required>
+                    <label for="login-id" class="sr-only">User ID</label>
+                    <input 
+                        type="text" 
+                        id="login-id" 
+                        name="login-id"
+                        placeholder="Enter ID" 
+                        autocomplete="username" 
+                        required
+                        aria-required="true"
+                        aria-describedby="login-error"
+                    >
+                    <label for="login-password" class="sr-only">Password</label>
+                    <input 
+                        type="password" 
+                        id="login-password" 
+                        name="login-password"
+                        placeholder="Enter password" 
+                        autocomplete="current-password"
+                        required
+                        aria-required="true"
+                        aria-describedby="login-error"
+                    >
                 </div>
                 <button type="submit">Unlock Application</button>
             </form>
-            <div id="login-error" class="login-error"></div>
+            <div id="login-error" class="login-error" role="alert" aria-live="polite" aria-atomic="true"></div>
         </div>
     </div>
     <div id="app-content" class="container hidden">
@@ -888,74 +1141,101 @@
             </div>
             <div class="app-main">
                 <!-- Page 1: Feature Entry -->
-                <div id="page1" class="page active">
+                <div id="page1" class="page active" role="region" aria-label="Feature Entry">
             <h1>Feature Prioritization Tool</h1>
             <p class="subtitle">Enter the features you want to discuss during customer interviews</p>
 
-            <div class="respondent-section">
+            <section class="respondent-section" aria-labelledby="respondent-management-heading">
                 <div class="respondent-header">
-                    <span class="respondent-label">Respondent Management</span>
+                    <h2 id="respondent-management-heading" class="respondent-label">Respondent Management</h2>
                 </div>
                 <div class="respondent-input-group">
+                    <label for="respondentInput" class="sr-only">Respondent Name</label>
                     <input
                         type="text"
                         id="respondentInput"
                         class="respondent-input"
                         placeholder="Enter respondent name..."
-                        autocomplete="off"
+                        autocomplete="name"
+                        aria-label="Enter respondent name"
+                        aria-describedby="respondent-help"
                     >
-                    <button onclick="addRespondent()" class="button-warning">Add New Respondent</button>
+                    <button onclick="addRespondent()" class="button-warning" aria-label="Add new respondent">Add New Respondent</button>
+                    <span id="respondent-help" class="sr-only">Enter a name for the new respondent</span>
                 </div>
                 <div class="respondent-dropdown-container" style="margin-top: 15px;">
                     <label for="respondentDropdownPage1" class="respondent-dropdown-label">Current Respondent:</label>
-                    <select id="respondentDropdownPage1" onchange="handleRespondentDropdownChangePage1()">
+                    <select 
+                        id="respondentDropdownPage1" 
+                        onchange="handleRespondentDropdownChangePage1()"
+                        aria-label="Select current respondent"
+                    >
                         <option value="">-- Select a respondent --</option>
                     </select>
-                    <button onclick="removeCurrentRespondent()" class="button-danger" id="removeRespondentBtn" style="display: none;">Remove</button>
+                    <button 
+                        onclick="removeCurrentRespondent()" 
+                        class="button-danger" 
+                        id="removeRespondentBtn" 
+                        style="display: none;"
+                        aria-label="Remove current respondent"
+                    >Remove</button>
                 </div>
-            </div>
+            </section>
 
-            <div class="file-upload-section">
-                <label class="file-upload-label">Upload Excel File</label>
-                <span class="file-upload-description">Upload an Excel file (.xlsx, .xls) with features listed in the first column</span>
-                <input type="file" id="excelFileInput" accept=".xlsx,.xls" onchange="handleFileUpload(event)">
-                <label for="excelFileInput" class="file-upload-button">Choose Excel File</label>
-                <span id="fileNameDisplay" class="file-name-display"></span>
-            </div>
+            <section class="file-upload-section" aria-labelledby="file-upload-label" id="fileUploadSection">
+                <label id="file-upload-label" class="file-upload-label">Upload Excel File</label>
+                <span id="file-upload-description" class="file-upload-description">Upload an Excel file (.xlsx, .xls) with features listed in the first column. You can drag and drop a file here.</span>
+                <input 
+                    type="file" 
+                    id="excelFileInput" 
+                    accept=".xlsx,.xls" 
+                    onchange="handleFileUpload(event)"
+                    aria-label="Choose Excel file to upload"
+                    aria-describedby="file-upload-description"
+                >
+                <label for="excelFileInput" class="file-upload-button" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();document.getElementById('excelFileInput').click();}">Choose Excel File</label>
+                <span id="fileNameDisplay" class="file-name-display" aria-live="polite"></span>
+            </section>
 
             <div class="divider">OR</div>
 
-            <div class="feature-input-section">
+            <section class="feature-input-section" aria-labelledby="feature-input-heading">
+                <h2 id="feature-input-heading" class="sr-only">Add Feature</h2>
                 <div class="input-group">
+                    <label for="featureInput" class="sr-only">Feature Name</label>
                     <input
                         type="text"
                         id="featureInput"
                         placeholder="Enter a feature (e.g., 'User authentication', 'Export to PDF')..."
                         autocomplete="off"
+                        aria-label="Enter a feature name"
+                        aria-describedby="feature-help"
                     >
-                    <button onclick="addFeature()">Add Feature</button>
+                    <button onclick="addFeature()" aria-label="Add feature to list">Add Feature</button>
+                    <span id="feature-help" class="sr-only">Press Enter or click Add Feature to add the feature to your list</span>
                 </div>
-            </div>
+            </section>
 
-            <div class="features-list">
+            <section class="features-list" aria-labelledby="features-heading">
                 <div class="features-list-header">
-                    <h2 style="color: #333;">Features to Prioritize</h2>
+                    <h2 id="features-heading" style="color: #333;">Features to Prioritize</h2>
                     <button
                         id="removeAllFeaturesBtn"
                         class="button-danger"
                         onclick="removeAllFeatures()"
                         style="display: none;"
+                        aria-label="Remove all features"
                     >
                         Remove All Features
                     </button>
                 </div>
-                <div id="featuresList">
-                    <div class="empty-state">
-                        <div class="empty-state-icon">📝</div>
+                <div id="featuresList" role="list" aria-label="List of features">
+                    <div class="empty-state" role="listitem">
+                        <div class="empty-state-icon" aria-hidden="true">📝</div>
                         <p>No features added yet. Start by adding your first feature above.</p>
                     </div>
                 </div>
-            </div>
+            </section>
 
             <div class="button-group">
                 <button
@@ -970,20 +1250,25 @@
                 </div>
 
                 <!-- Page 2: Prioritization -->
-                <div id="page2" class="page">
+                <div id="page2" class="page" role="region" aria-label="Feature Prioritization">
             <h1>Prioritize Features</h1>
             <p class="subtitle">Select the priority level for each feature</p>
 
-            <div class="respondent-section">
+            <section class="respondent-section" aria-labelledby="respondent-select-heading">
+                <h2 id="respondent-select-heading" class="sr-only">Select Respondent</h2>
                 <div class="respondent-dropdown-container">
                     <label for="respondentDropdown" class="respondent-dropdown-label">Select Respondent:</label>
-                    <select id="respondentDropdown" onchange="handleRespondentDropdownChange()">
+                    <select 
+                        id="respondentDropdown" 
+                        onchange="handleRespondentDropdownChange()"
+                        aria-label="Select respondent for prioritization"
+                    >
                         <option value="">-- Select a respondent --</option>
                     </select>
                 </div>
-            </div>
+            </section>
 
-            <div id="prioritizationContent">
+            <div id="prioritizationContent" role="region" aria-label="Prioritization table">
                 <!-- Table will be generated by JavaScript -->
             </div>
 
@@ -1000,16 +1285,16 @@
                 </div>
 
                 <!-- Page 3: Feature Importance Chart -->
-                <div id="page3" class="page">
+                <div id="page3" class="page" role="region" aria-label="Feature Importance Chart">
             <h1>Feature Importance Overview</h1>
             <p class="chart-page-intro">
                 This stacked bar chart aggregates responses from every respondent. Each bar shows how often a feature was
                 classified into each priority category, helping you quickly spot the most critical capabilities.
             </p>
 
-            <div class="chart-wrapper" id="chartWrapper">
-                <canvas id="featureImportanceChart"></canvas>
-                <div id="chartEmptyState" class="chart-empty-state" style="display: none;">
+            <div class="chart-wrapper" id="chartWrapper" role="img" aria-label="Feature importance stacked bar chart">
+                <canvas id="featureImportanceChart" aria-label="Chart displaying feature importance across all respondents"></canvas>
+                <div id="chartEmptyState" class="chart-empty-state" style="display: none;" role="status" aria-live="polite">
                     No prioritization data yet. Assign priorities to features to populate this chart.
                 </div>
             </div>
@@ -1120,27 +1405,78 @@
             { id: 'not', label: '4. Not needed' }
         ];
 
-        // Save data to localStorage
-        function saveData() {
-            localStorage.setItem('features', JSON.stringify(features));
-            localStorage.setItem('respondents', JSON.stringify(respondents));
-            localStorage.setItem('currentRespondentId', currentRespondentId);
+        // Utility: Sanitize text to prevent XSS
+        function sanitizeText(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
 
-        // Load data from localStorage
-        function loadData() {
-            const savedFeatures = localStorage.getItem('features');
-            const savedRespondents = localStorage.getItem('respondents');
-            const savedCurrentRespondentId = localStorage.getItem('currentRespondentId');
+        // Utility: Escape HTML entities
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return String(text).replace(/[&<>"']/g, m => map[m]);
+        }
 
-            if (savedFeatures) {
-                features = JSON.parse(savedFeatures);
+        // Utility: Debounce function for performance
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // Save data to localStorage with error handling
+        function saveData() {
+            try {
+                localStorage.setItem('features', JSON.stringify(features));
+                localStorage.setItem('respondents', JSON.stringify(respondents));
+                localStorage.setItem('currentRespondentId', currentRespondentId || '');
+            } catch (error) {
+                console.error('Error saving to localStorage:', error);
+                showNotification('Error saving data. Your changes may not persist.', 'error');
             }
-            if (savedRespondents) {
-                respondents = JSON.parse(savedRespondents);
-            }
-            if (savedCurrentRespondentId) {
-                currentRespondentId = savedCurrentRespondentId;
+        }
+
+        // Load data from localStorage with error handling
+        function loadData() {
+            try {
+                const savedFeatures = localStorage.getItem('features');
+                const savedRespondents = localStorage.getItem('respondents');
+                const savedCurrentRespondentId = localStorage.getItem('currentRespondentId');
+
+                if (savedFeatures) {
+                    const parsed = JSON.parse(savedFeatures);
+                    if (Array.isArray(parsed)) {
+                        features = parsed;
+                    }
+                }
+                if (savedRespondents) {
+                    const parsed = JSON.parse(savedRespondents);
+                    if (Array.isArray(parsed)) {
+                        respondents = parsed;
+                    }
+                }
+                if (savedCurrentRespondentId) {
+                    currentRespondentId = savedCurrentRespondentId;
+                }
+            } catch (error) {
+                console.error('Error loading from localStorage:', error);
+                // Reset to defaults on error
+                features = [];
+                respondents = [];
+                currentRespondentId = null;
             }
         }
 
@@ -1155,25 +1491,51 @@
             return respondent ? respondent.priorities : {};
         }
 
-        // Respondent Management Functions
+        // Respondent Management Functions with validation
         function addRespondent() {
             const input = document.getElementById('respondentInput');
-            const respondentName = input.value.trim();
+            if (!input) {
+                console.error('Respondent input not found');
+                return;
+            }
+            
+            let respondentName = input.value.trim();
+
+            // Validate input
+            if (respondentName === '') {
+                showNotification('Please enter a respondent name', 'warning');
+                input.focus();
+                return;
+            }
+
+            // Limit respondent name length
+            if (respondentName.length > 100) {
+                showNotification('Respondent name is too long (max 100 characters)', 'warning');
+                input.select();
+                return;
+            }
+
+            // Sanitize name (remove HTML tags)
+            respondentName = respondentName.replace(/<[^>]*>/g, '').trim();
 
             if (respondentName === '') {
-                alert('Please enter a respondent name');
+                showNotification('Invalid respondent name', 'warning');
+                input.focus();
                 return;
             }
 
-            // Check if respondent name already exists
-            if (respondents.some(r => r.name === respondentName)) {
-                alert('A respondent with this name already exists');
+            // Check if respondent name already exists (case-insensitive)
+            if (respondents.some(r => r.name.toLowerCase() === respondentName.toLowerCase())) {
+                showNotification('A respondent with this name already exists', 'warning');
+                input.select();
                 return;
             }
 
-            // Create new respondent
+            // Create new respondent with unique ID
+            const timestamp = Date.now();
+            const randomSuffix = Math.random().toString(36).substr(2, 5);
             const newRespondent = {
-                id: 'resp_' + Date.now(),
+                id: `resp_${timestamp}_${randomSuffix}`,
                 name: respondentName,
                 priorities: {}
             };
@@ -1185,6 +1547,7 @@
             saveData();
             renderRespondentList();
             refreshChartIfActive();
+            showNotification(`Respondent "${respondentName}" added successfully`, 'success');
         }
 
         function switchRespondent(respondentId) {
@@ -1206,7 +1569,10 @@
 
         function removeRespondent(respondentId) {
             const respondent = respondents.find(r => r.id === respondentId);
-            if (!respondent) return;
+            if (!respondent) {
+                console.error('Respondent not found');
+                return;
+            }
 
             if (!confirm(`Remove respondent "${respondent.name}" and all their responses?`)) {
                 return;
@@ -1222,6 +1588,7 @@
             saveData();
             renderRespondentList();
             refreshChartIfActive();
+            showNotification(`Respondent "${respondent.name}" removed`, 'info');
         }
 
         function renderRespondentList() {
@@ -1279,12 +1646,13 @@
             }
         }
 
-        // Add feature (Enter key support)
+        // Add feature (Enter key support) and drag-and-drop
         document.addEventListener('DOMContentLoaded', () => {
             const featureInput = document.getElementById('featureInput');
             if (featureInput) {
                 featureInput.addEventListener('keypress', (e) => {
                     if (e.key === 'Enter') {
+                        e.preventDefault();
                         addFeature();
                     }
                 });
@@ -1294,24 +1662,92 @@
             if (respondentInput) {
                 respondentInput.addEventListener('keypress', (e) => {
                     if (e.key === 'Enter') {
+                        e.preventDefault();
                         addRespondent();
                     }
                 });
             }
+            
+            // Setup drag and drop for file upload
+            const fileUploadSection = document.getElementById('fileUploadSection');
+            const fileInput = document.getElementById('excelFileInput');
+            
+            if (fileUploadSection && fileInput) {
+                // Prevent default drag behaviors
+                ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                    fileUploadSection.addEventListener(eventName, preventDefaults, false);
+                    document.body.addEventListener(eventName, preventDefaults, false);
+                });
+                
+                function preventDefaults(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+                
+                // Highlight drop area when item is dragged over it
+                ['dragenter', 'dragover'].forEach(eventName => {
+                    fileUploadSection.addEventListener(eventName, () => {
+                        fileUploadSection.classList.add('dragover');
+                    }, false);
+                });
+                
+                ['dragleave', 'drop'].forEach(eventName => {
+                    fileUploadSection.addEventListener(eventName, () => {
+                        fileUploadSection.classList.remove('dragover');
+                    }, false);
+                });
+                
+                // Handle dropped files
+                fileUploadSection.addEventListener('drop', (e) => {
+                    const dt = e.dataTransfer;
+                    const files = dt.files;
+                    
+                    if (files.length > 0) {
+                        fileInput.files = files;
+                        const event = new Event('change', { bubbles: true });
+                        fileInput.dispatchEvent(event);
+                    }
+                }, false);
+            }
         });
 
-        // Add a new feature
+        // Add a new feature with validation
         function addFeature() {
             const input = document.getElementById('featureInput');
-            const featureName = input.value.trim();
+            if (!input) {
+                console.error('Feature input not found');
+                return;
+            }
+            
+            let featureName = input.value.trim();
 
+            // Validate input
             if (featureName === '') {
-                alert('Please enter a feature name');
+                showNotification('Please enter a feature name', 'warning');
+                input.focus();
                 return;
             }
 
-            if (features.includes(featureName)) {
-                alert('This feature has already been added');
+            // Limit feature name length
+            if (featureName.length > 200) {
+                showNotification('Feature name is too long (max 200 characters)', 'warning');
+                input.select();
+                return;
+            }
+
+            // Check for duplicate (case-insensitive)
+            if (features.some(f => f.toLowerCase() === featureName.toLowerCase())) {
+                showNotification('This feature has already been added', 'warning');
+                input.select();
+                return;
+            }
+
+            // Sanitize feature name (remove any HTML tags, keep only text)
+            featureName = featureName.replace(/<[^>]*>/g, '').trim();
+
+            if (featureName === '') {
+                showNotification('Invalid feature name', 'warning');
+                input.focus();
                 return;
             }
 
@@ -1323,6 +1759,33 @@
             renderFeaturesList();
             updateNextButton();
             refreshChartIfActive();
+            showNotification(`Feature "${featureName}" added successfully`, 'success');
+        }
+        
+        // Simple notification system
+        function showNotification(message, type = 'info') {
+            // Remove existing notifications
+            const existing = document.querySelector('.notification');
+            if (existing) {
+                existing.remove();
+            }
+            
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.textContent = message;
+            notification.setAttribute('role', 'alert');
+            notification.setAttribute('aria-live', 'polite');
+            
+            document.body.appendChild(notification);
+            
+            // Trigger animation
+            setTimeout(() => notification.classList.add('show'), 10);
+            
+            // Auto remove after 3 seconds
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
         }
 
         // Handle Excel file upload
@@ -1332,9 +1795,22 @@
                 return;
             }
 
+            // Validate file type
+            const validTypes = ['.xlsx', '.xls'];
+            const fileName = file.name.toLowerCase();
+            const isValidType = validTypes.some(type => fileName.endsWith(type));
+            
+            if (!isValidType) {
+                alert('Invalid file type. Please upload an Excel file (.xlsx or .xls).');
+                event.target.value = '';
+                return;
+            }
+
             // Display selected file name
             const fileNameDisplay = document.getElementById('fileNameDisplay');
-            fileNameDisplay.textContent = file.name;
+            if (fileNameDisplay) {
+                fileNameDisplay.textContent = `Selected: ${file.name}`;
+            }
 
             const reader = new FileReader();
 
@@ -1383,48 +1859,63 @@
                     updateNextButton();
                     refreshChartIfActive();
 
-                    // Show summary message
+                    // Show summary message via notification
                     let message = `Successfully imported ${addedCount} feature(s) from Excel file.`;
                     if (duplicateCount > 0) {
-                        message += `\n${duplicateCount} duplicate(s) were skipped.`;
+                        message += ` ${duplicateCount} duplicate(s) skipped.`;
                     }
                     if (emptyCount > 0) {
-                        message += `\n${emptyCount} empty row(s) were skipped.`;
+                        message += ` ${emptyCount} empty row(s) skipped.`;
                     }
 
-                    alert(message);
+                    showNotification(message, addedCount > 0 ? 'success' : 'info');
 
                     // Clear the file input so the same file can be selected again if needed
                     event.target.value = '';
 
                 } catch (error) {
                     console.error('Error parsing Excel file:', error);
-                    alert('Error reading Excel file. Please make sure the file is a valid Excel format (.xlsx or .xls).');
+                    showNotification('Error reading Excel file. Please make sure the file is a valid Excel format (.xlsx or .xls).', 'error');
+                    event.target.value = '';
                 }
             };
 
             reader.onerror = function() {
-                alert('Error reading file. Please try again.');
+                showNotification('Error reading file. Please try again.', 'error');
+                event.target.value = '';
             };
 
             reader.readAsArrayBuffer(file);
         }
 
-        // Remove a feature
+        // Remove a feature with validation
         function removeFeature(index) {
+            if (index < 0 || index >= features.length) {
+                console.error('Invalid feature index');
+                return;
+            }
+            
             const feature = features[index];
-            if (confirm(`Remove "${feature}"?`)) {
+            if (!feature) {
+                console.error('Feature not found at index', index);
+                return;
+            }
+            
+            if (confirm(`Remove "${escapeHtml(feature)}"?`)) {
                 features.splice(index, 1);
 
                 // Remove feature from all respondents' priorities
                 respondents.forEach(respondent => {
-                    delete respondent.priorities[feature];
+                    if (respondent.priorities) {
+                        delete respondent.priorities[feature];
+                    }
                 });
 
                 saveData();
                 renderFeaturesList();
                 updateNextButton();
                 refreshChartIfActive();
+                showNotification(`Feature "${feature}" removed`, 'info');
             }
         }
 
@@ -1449,15 +1940,20 @@
             refreshChartIfActive();
         }
 
-        // Render the features list on page 1
+        // Render the features list on page 1 with XSS protection
         function renderFeaturesList() {
             const listContainer = document.getElementById('featuresList');
             const removeAllButton = document.getElementById('removeAllFeaturesBtn');
+            
+            if (!listContainer) {
+                console.error('Features list container not found');
+                return;
+            }
 
             if (features.length === 0) {
                 listContainer.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">📝</div>
+                    <div class="empty-state" role="listitem">
+                        <div class="empty-state-icon" aria-hidden="true">📝</div>
                         <p>No features added yet. Start by adding your first feature above.</p>
                     </div>
                 `;
@@ -1468,12 +1964,21 @@
                 return;
             }
 
-            listContainer.innerHTML = features.map((feature, index) => `
-                <div class="feature-item">
-                    <span>${feature}</span>
-                    <button class="button-danger" onclick="removeFeature(${index})">Remove</button>
-                </div>
-            `).join('');
+            // Use DocumentFragment for better performance
+            const fragment = document.createDocumentFragment();
+            features.forEach((feature, index) => {
+                const item = document.createElement('div');
+                item.className = 'feature-item';
+                item.setAttribute('role', 'listitem');
+                item.innerHTML = `
+                    <span>${escapeHtml(feature)}</span>
+                    <button class="button-danger" onclick="removeFeature(${index})" aria-label="Remove feature ${escapeHtml(feature)}">Remove</button>
+                `;
+                fragment.appendChild(item);
+            });
+            
+            listContainer.innerHTML = '';
+            listContainer.appendChild(fragment);
 
             if (removeAllButton) {
                 removeAllButton.style.display = 'inline-block';
@@ -1487,22 +1992,39 @@
         }
 
         function setActivePage(pageId) {
+            if (!pageIds.includes(pageId)) {
+                console.error('Invalid page ID:', pageId);
+                return;
+            }
+
+            // Update page visibility
             pageIds.forEach(id => {
                 const pageElement = document.getElementById(id);
                 if (pageElement) {
-                    pageElement.classList.toggle('active', id === pageId);
+                    const isActive = id === pageId;
+                    pageElement.classList.toggle('active', isActive);
+                    // Update ARIA attributes for accessibility
+                    pageElement.setAttribute('aria-hidden', !isActive);
                 }
             });
 
+            // Update navigation buttons
             document.querySelectorAll('.nav-button').forEach(button => {
                 const target = button.getAttribute('data-target');
                 button.classList.toggle('active', target === pageId);
+                button.setAttribute('aria-current', target === pageId ? 'page' : 'false');
             });
 
+            // Page-specific logic
             if (pageId === 'page1') {
                 const summary = document.getElementById('summary');
                 if (summary) {
                     summary.style.display = 'none';
+                }
+                // Focus management
+                const featureInput = document.getElementById('featureInput');
+                if (featureInput) {
+                    setTimeout(() => featureInput.focus(), 100);
                 }
             }
 
@@ -1524,15 +2046,15 @@
             setActivePage(pageId);
         }
 
-        // Navigate to prioritization page
+        // Navigate to prioritization page with validation
         function goToPrioritization() {
             if (features.length === 0) {
-                alert('Please add at least one feature first');
+                showNotification('Please add at least one feature first', 'warning');
                 return;
             }
 
             if (!currentRespondentId) {
-                alert('Please add and select a respondent first');
+                showNotification('Please add and select a respondent first', 'warning');
                 return;
             }
 
@@ -1552,59 +2074,123 @@
             setActivePage('page2');
         }
 
-        // Render the prioritization table
+        // Render the prioritization table with improved security
         function renderPrioritizationTable() {
             const content = document.getElementById('prioritizationContent');
+            if (!content) {
+                console.error('Prioritization content container not found');
+                return;
+            }
+
+            if (features.length === 0) {
+                content.innerHTML = '<p class="empty-state">No features available. Add features on the previous page.</p>';
+                return;
+            }
+            
             const currentPriorities = getCurrentPriorities();
-
-            let tableHTML = `
-                <div class="table-responsive">
-                    <table class="prioritization-table">
-                        <thead>
-                            <tr>
-                                <th>Feature</th>
-                                ${priorityOptions.map(p => `<th class="priority-cell">${p.label}</th>`).join('')}
-                            </tr>
-                        </thead>
-                        <tbody>
-            `;
-
-            features.forEach((feature, index) => {
-                tableHTML += `
-                    <tr>
-                        <td class="feature-name">${feature}</td>
-                        ${priorityOptions.map(p => `
-                            <td class="priority-cell">
-                                <input
-                                    type="radio"
-                                    name="priority-${index}"
-                                    value="${p.id}"
-                                    ${currentPriorities[feature] === p.id ? 'checked' : ''}
-                                    onchange="updatePriority('${feature.replace(/'/g, "\\'")}', '${p.id}')"
-                                >
-                            </td>
-                        `).join('')}
-                    </tr>
-                `;
+            
+            // Create table using DOM methods for better security
+            const wrapper = document.createElement('div');
+            wrapper.className = 'table-responsive';
+            
+            const table = document.createElement('table');
+            table.className = 'prioritization-table';
+            table.setAttribute('role', 'table');
+            table.setAttribute('aria-label', 'Feature prioritization table');
+            
+            // Create header
+            const thead = document.createElement('thead');
+            const headerRow = document.createElement('tr');
+            const featureHeader = document.createElement('th');
+            featureHeader.textContent = 'Feature';
+            featureHeader.setAttribute('scope', 'col');
+            headerRow.appendChild(featureHeader);
+            
+            priorityOptions.forEach(option => {
+                const th = document.createElement('th');
+                th.className = 'priority-cell';
+                th.textContent = option.label;
+                th.setAttribute('scope', 'col');
+                headerRow.appendChild(th);
             });
-
-            tableHTML += `
-                        </tbody>
-                    </table>
-                </div>
-            `;
-
-            content.innerHTML = tableHTML;
+            
+            thead.appendChild(headerRow);
+            table.appendChild(thead);
+            
+            // Create body
+            const tbody = document.createElement('tbody');
+            features.forEach((feature, index) => {
+                const row = document.createElement('tr');
+                
+                const featureCell = document.createElement('td');
+                featureCell.className = 'feature-name';
+                featureCell.textContent = feature;
+                row.appendChild(featureCell);
+                
+                priorityOptions.forEach(option => {
+                    const cell = document.createElement('td');
+                    cell.className = 'priority-cell';
+                    
+                    const label = document.createElement('label');
+                    label.className = 'radio-label';
+                    
+                    const radio = document.createElement('input');
+                    radio.type = 'radio';
+                    radio.name = `priority-${index}`;
+                    radio.value = option.id;
+                    radio.checked = currentPriorities[feature] === option.id;
+                    radio.setAttribute('aria-label', `Set ${feature} priority to ${option.label}`);
+                    radio.addEventListener('change', () => updatePriority(feature, option.id));
+                    
+                    const srSpan = document.createElement('span');
+                    srSpan.className = 'sr-only';
+                    srSpan.textContent = option.label;
+                    
+                    label.appendChild(radio);
+                    label.appendChild(srSpan);
+                    cell.appendChild(label);
+                    row.appendChild(cell);
+                });
+                
+                tbody.appendChild(row);
+            });
+            
+            table.appendChild(tbody);
+            wrapper.appendChild(table);
+            
+            // Clear and append
+            content.innerHTML = '';
+            content.appendChild(wrapper);
         }
 
-        // Update priority for a feature
+        // Update priority for a feature with validation
         function updatePriority(feature, priorityId) {
-            const respondent = getCurrentRespondent();
-            if (respondent) {
-                respondent.priorities[feature] = priorityId;
-                saveData();
-                refreshChartIfActive();
+            // Validate priority ID
+            const validPriorityIds = priorityOptions.map(p => p.id);
+            if (!validPriorityIds.includes(priorityId)) {
+                console.error('Invalid priority ID:', priorityId);
+                return;
             }
+
+            // Validate feature exists
+            if (!features.includes(feature)) {
+                console.error('Feature not found:', feature);
+                return;
+            }
+
+            const respondent = getCurrentRespondent();
+            if (!respondent) {
+                showNotification('Please select a respondent first', 'warning');
+                return;
+            }
+
+            if (!respondent.priorities) {
+                respondent.priorities = {};
+            }
+
+            respondent.priorities[feature] = priorityId;
+            saveData();
+            refreshChartIfActive();
         }
 
         // Show summary
@@ -1726,10 +2312,10 @@
             const labels = aggregatedData.map(item => item.feature);
 
             const datasetConfigs = [
-                { key: 'must', color: '#6C63FF' },
-                { key: 'should', color: '#4CAF50' },
-                { key: 'nice', color: '#FFC107' },
-                { key: 'not', color: '#FF7043' }
+                { key: 'must', color: 'var(--chart-color-must)' },
+                { key: 'should', color: 'var(--chart-color-should)' },
+                { key: 'nice', color: 'var(--chart-color-nice)' },
+                { key: 'not', color: 'var(--chart-color-not)' }
             ];
 
             const datasets = datasetConfigs.map(config => {
@@ -1815,15 +2401,22 @@
 
         // Export data to Excel with respondents as rows and features as columns
         function exportToExcel() {
+            if (!window.XLSX) {
+                showNotification('Excel library not loaded. Please refresh the page.', 'error');
+                return;
+            }
+
             if (features.length === 0) {
-                alert('No features to export');
+                showNotification('No features to export', 'warning');
                 return;
             }
 
             if (respondents.length === 0) {
-                alert('No respondents to export');
+                showNotification('No respondents to export', 'warning');
                 return;
             }
+
+            try {
 
             // Create workbook and worksheet
             const wb = XLSX.utils.book_new();
@@ -1869,12 +2462,17 @@
             // Add worksheet to workbook
             XLSX.utils.book_append_sheet(wb, ws, 'Prioritization Results');
 
-            // Generate filename with current date
-            const date = new Date();
-            const filename = `feature-prioritization-${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}.xlsx`;
+                // Generate filename with current date
+                const date = new Date();
+                const filename = `feature-prioritization-${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}.xlsx`;
 
-            // Write and download file
-            XLSX.writeFile(wb, filename);
+                // Write and download file
+                XLSX.writeFile(wb, filename);
+                showNotification('Excel file exported successfully', 'success');
+            } catch (error) {
+                console.error('Error exporting to Excel:', error);
+                showNotification('Error exporting to Excel. Please try again.', 'error');
+            }
         }
     </script>
 </body>
